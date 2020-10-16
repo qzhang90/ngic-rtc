@@ -56,7 +56,7 @@
  */
 static int
 build_dp_msg(enum dp_msg_type mtype, struct dp_id dp_id,
-					void *param, struct msgbuf *msg_payload)
+					void *param, struct ngic_rtc_msgbuf *msg_payload)
 {
 	msg_payload->mtype = mtype;
 	msg_payload->dp_id = dp_id;
@@ -126,10 +126,10 @@ build_dp_msg(enum dp_msg_type mtype, struct dp_id dp_id,
  *	-1 - fail
  */
 static int
-send_dp_msg(struct dp_id dp_id, struct msgbuf *msg_payload)
+send_dp_msg(struct dp_id dp_id, struct ngic_rtc_msgbuf *msg_payload)
 {
 	RTE_SET_USED(dp_id);
-	if (active_comm_msg->send((void *)msg_payload, sizeof(struct msgbuf)) < 0) {
+	if (active_comm_msg->send((void *)msg_payload, sizeof(struct ngic_rtc_msgbuf)) < 0) {
 		perror("msgsnd");
 		return -1;
 	}
@@ -141,7 +141,7 @@ int
 sdf_filter_table_create(struct dp_id dp_id, uint32_t max_elements)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SDF_CRE, dp_id, (void *)&max_elements, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -153,7 +153,7 @@ int
 sdf_filter_table_delete(struct dp_id dp_id)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SDF_DES, dp_id, (void *)NULL, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -165,7 +165,7 @@ int
 sdf_filter_entry_add(struct dp_id dp_id, struct pkt_filter pkt_filter_entry)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SDF_ADD, dp_id, (void *)&pkt_filter_entry, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -177,7 +177,7 @@ int
 sdf_filter_entry_delete(struct dp_id dp_id, struct pkt_filter pkt_filter_entry)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SDF_DEL, dp_id, (void *)&pkt_filter_entry, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -190,7 +190,7 @@ int
 adc_table_create(struct dp_id dp_id, uint32_t max_elements)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_ADC_TBL_CRE, dp_id, (void *)&max_elements, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -201,7 +201,7 @@ adc_table_create(struct dp_id dp_id, uint32_t max_elements)
 int adc_table_delete(struct dp_id dp_id)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_ADC_TBL_DES, dp_id, (void *)NULL, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -212,7 +212,7 @@ int adc_table_delete(struct dp_id dp_id)
 int adc_entry_add(struct dp_id dp_id, struct adc_rules entry)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_ADC_TBL_ADD, dp_id, (void *)&entry, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -223,7 +223,7 @@ int adc_entry_add(struct dp_id dp_id, struct adc_rules entry)
 int adc_entry_delete(struct dp_id dp_id, struct adc_rules entry)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_ADC_TBL_DEL, dp_id, (void *)&entry, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -236,7 +236,7 @@ int
 pcc_table_create(struct dp_id dp_id, uint32_t max_elements)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_PCC_TBL_CRE, dp_id, (void *)&max_elements, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -248,7 +248,7 @@ int
 pcc_table_delete(struct dp_id dp_id)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_PCC_TBL_DES, dp_id, (void *)NULL, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -260,7 +260,7 @@ int
 pcc_entry_add(struct dp_id dp_id, struct pcc_rules entry)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_PCC_TBL_ADD, dp_id, (void *)&entry, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -272,7 +272,7 @@ int
 pcc_entry_delete(struct dp_id dp_id, struct pcc_rules entry)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_PCC_TBL_DEL, dp_id, (void *)&entry, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -285,7 +285,7 @@ int
 session_table_create(struct dp_id dp_id, uint32_t max_elements)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SESS_TBL_CRE, dp_id, (void *)&max_elements, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -297,7 +297,7 @@ int
 session_table_delete(struct dp_id dp_id)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SESS_TBL_DES, dp_id, (void *)NULL, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -315,7 +315,7 @@ session_create(struct dp_id dp_id,
 	add_resp_op_id_hash();
 #endif  /* ZMQ_COMM */
 
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SESS_CRE, dp_id, (void *)&entry, &msg_payload);
 
 #ifdef SYNC_STATS
@@ -382,7 +382,7 @@ session_modify(struct dp_id dp_id,
 	add_resp_op_id_hash();
 #endif  /* ZMQ_COMM */
 
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SESS_MOD, dp_id, (void *)&entry, &msg_payload);
 
 #ifdef SYNC_STATS
@@ -420,7 +420,7 @@ int
 send_ddn_ack(struct dp_id dp_id,
 				struct downlink_data_notification entry)
 {
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_DDN_ACK, dp_id, (void *)&entry, &msg_payload);
 
 #ifdef SDN_ODL_BUILD
@@ -453,7 +453,7 @@ session_delete(struct dp_id dp_id,
 	add_resp_op_id_hash();
 #endif  /* ZMQ_COMM */
 
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_SESS_DEL, dp_id, (void *)&entry, &msg_payload);
 
 #ifdef SYNC_STATS
@@ -480,7 +480,7 @@ int
 meter_profile_table_create(struct dp_id dp_id, uint32_t max_elements)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_MTR_CRE, dp_id, (void *)&max_elements, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -492,7 +492,7 @@ int
 meter_profile_table_delete(struct dp_id dp_id)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_MTR_DES, dp_id, (void *)NULL, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -504,7 +504,7 @@ int
 meter_profile_entry_add(struct dp_id dp_id, struct mtr_entry entry)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_MTR_ADD, dp_id, (void *)&entry, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -516,7 +516,7 @@ int
 meter_profile_entry_delete(struct dp_id dp_id, struct mtr_entry entry)
 {
 #ifdef CP_BUILD
-	struct msgbuf msg_payload;
+	struct ngic_rtc_msgbuf msg_payload;
 	build_dp_msg(MSG_MTR_DEL, dp_id, (void *)&entry, &msg_payload);
 	return send_dp_msg(dp_id, &msg_payload);
 #else
@@ -528,7 +528,7 @@ int
 ue_cdr_flush(struct dp_id dp_id, struct msg_ue_cdr ue_cdr)
 {
 #ifdef CP_BUILD
-    struct msgbuf msg_payload;
+    struct ngic_rtc_msgbuf msg_payload;
     build_dp_msg(MSG_EXP_CDR, dp_id, (void *)&ue_cdr, &msg_payload);
     return send_dp_msg(dp_id, &msg_payload);
 #else

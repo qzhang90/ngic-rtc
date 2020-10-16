@@ -80,9 +80,9 @@ struct table {
  * @return
  *	pointer to udp headers
  */
-static inline struct udp_hdr *get_mtoudp(struct rte_mbuf *m)
+static inline struct rte_udp_hdr *get_mtoudp(struct rte_mbuf *m)
 {
-	return (struct udp_hdr *)(rte_pktmbuf_mtod(m, unsigned char *) +
+	return (struct rte_udp_hdr *)(rte_pktmbuf_mtod(m, unsigned char *) +
 				    ETH_HDR_SIZE + IPv4_HDR_SIZE);
 }
 

@@ -40,14 +40,14 @@ static inline void epc_s1u_rx_set_port_id(struct rte_mbuf *m)
 							META_DATA_OFFSET);
 	uint32_t *port_id_offset = &meta_data->port_id;
 	uint32_t *ue_ipv4_hash_offset = &meta_data->ue_ipv4_hash;
-	struct ipv4_hdr *ipv4_hdr =
-	    (struct ipv4_hdr *)&m_data[sizeof(struct ether_hdr)];
-	struct udp_hdr *udph;
+	struct rte_ipv4_hdr *ipv4_hdr =
+	    (struct rte_ipv4_hdr *)&m_data[sizeof(struct rte_ether_hdr)];
+	struct rte_udp_hdr *udph;
 	uint32_t ip_len;
-	struct ether_hdr *eh = (struct ether_hdr *)&m_data[0];
+	struct rte_ether_hdr *eh = (struct rte_ether_hdr *)&m_data[0];
 	uint32_t ipv4_packet;
 
-	ipv4_packet = (eh->ether_type == htons(ETHER_TYPE_IPv4));
+	ipv4_packet = (eh->ether_type == htons(RTE_ETHER_TYPE_IPV4));
 
 	if (unlikely(m->ol_flags
 		& (PKT_RX_L4_CKSUM_BAD
@@ -61,7 +61,7 @@ static inline void epc_s1u_rx_set_port_id(struct rte_mbuf *m)
 	if (likely(ipv4_packet && ipv4_hdr->next_proto_id == IPPROTO_UDP)) {
 		ip_len = (ipv4_hdr->version_ihl & 0xf) << 2;
 		udph =
-		    (struct udp_hdr *)&m_data[sizeof(struct ether_hdr) +
+		    (struct rte_udp_hdr *)&m_data[sizeof(struct rte_ether_hdr) +
 					      ip_len];
 		if (likely(udph->dst_port == htons(2152))) {
 			/* TODO: Inner could be ipv6 ? */
@@ -70,8 +70,8 @@ static inline void epc_s1u_rx_set_port_id(struct rte_mbuf *m)
 					 "gtpu_hdrsz= %lu\n",
 					 __func__, sizeof(struct gtpu_hdr));
 
-			struct ipv4_hdr *inner_ipv4_hdr =
-			    (struct ipv4_hdr *)RTE_PTR_ADD(udph,
+			struct rte_ipv4_hdr *inner_ipv4_hdr =
+			    (struct rte_ipv4_hdr *)RTE_PTR_ADD(udph,
 							   UDP_HDR_SIZE +
 							   sizeof(struct
 								  gtpu_hdr));
@@ -111,14 +111,14 @@ static inline void epc_sgi_rx_set_port_id(struct rte_mbuf *m)
 							META_DATA_OFFSET);
 	uint32_t *port_id_offset = &meta_data->port_id;
 	uint32_t *ue_ipv4_hash_offset = &meta_data->ue_ipv4_hash;
-	struct ipv4_hdr *ipv4_hdr =
-	    (struct ipv4_hdr *)&m_data[sizeof(struct ether_hdr)];
+	struct rte_ipv4_hdr *ipv4_hdr =
+	    (struct rte_ipv4_hdr *)&m_data[sizeof(struct rte_ether_hdr)];
 
-	struct ether_hdr *eh = (struct ether_hdr *)&m_data[0];
+	struct rte_ether_hdr *eh = (struct rte_ether_hdr *)&m_data[0];
 	uint32_t ipv4_packet;
 	int bcast;
 
-	ipv4_packet = (eh->ether_type == htons(ETHER_TYPE_IPv4));
+	ipv4_packet = (eh->ether_type == htons(RTE_ETHER_TYPE_IPV4));
 	bcast = is_broadcast_ether_addr(&eh->d_addr);
 
 	if (unlikely(m->ol_flags
@@ -206,15 +206,15 @@ void epc_rx_init(struct epc_rx_params *param, int core, uint8_t port_id)
 	if (p == NULL)
 		rte_panic("%s: Unable to configure the pipeline\n", __func__);
 
-	 /* Input port configuration */
-	if (rte_eth_dev_socket_id(port_id)
-		!= (int)lcore_config[core].socket_id) {
-		RTE_LOG_DP(WARNING, EPC,
-			"location of the RX core for port=%d is not optimal\n",
-			port_id);
-		RTE_LOG_DP(WARNING, EPC,
-			"***** performance may be degradated !!!!! *******\n");
-	}
+	// /* Input port configuration */
+	// if (rte_eth_dev_socket_id(port_id)
+	// 	!= (int)lcore_config[core].socket_id) {
+	// 	RTE_LOG_DP(WARNING, EPC,
+	// 		"location of the RX core for port=%d is not optimal\n",
+	// 		port_id);
+	// 	RTE_LOG_DP(WARNING, EPC,
+	// 		"***** performance may be degradated !!!!! *******\n");
+	// }
 
 	struct rte_port_ethdev_reader_params port_ethdev_params = {
 		.port_id = epc_app.ports[port_id],

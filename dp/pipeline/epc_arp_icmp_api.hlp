@@ -33,7 +33,7 @@ dp/main.c
 ::dp/pipeline/epc_arp_icmp.c:
 {
 	...
-	int arp_icmp_get_dest_mac_address(__rte_unused const uint32_t ipaddr, const uint32_t phy_port, struct ether_addr *hw_addr, uint32_t *nhip)
+	int arp_icmp_get_dest_mac_address(__rte_unused const uint32_t ipaddr, const uint32_t phy_port, struct rte_ether_addr *hw_addr, uint32_t *nhip)
 	{
 		...
   		tmp_arp_key.port_id = phy_port;
@@ -46,7 +46,7 @@ dp/main.c
       			printf("ARPICMP status INCOMPLETE for port %d, ip: ", phy_port);
       			return 0;
     		}
-    	ether_addr_copy(&ret_arp_data->eth_addr, hw_addr);
+    	rte_ether_addr_copy(&ret_arp_data->eth_addr, hw_addr);
     	return 1;
   	}
   	return 0;
@@ -88,7 +88,7 @@ dp/pipeline/epc_packet_framework.c:
 	}
 
 	struct arp_entry_data {
-	  struct ether_addr eth_addr;
+	  struct rte_ether_addr eth_addr;
 	  uint8_t port;
 	  uint8_t status;
 	  uint32_t ip;
@@ -97,9 +97,9 @@ dp/pipeline/epc_packet_framework.c:
 
 	struct arp_port_address {
 	  uint32_t ip;
-	  struct ether_addr *mac_addr;
+	  struct rte_ether_addr *mac_addr;
 	};
-	extern struct ether_addr ports_eth_addr[];
+	extern struct rte_ether_addr ports_eth_addr[];
 	static struct arp_port_address arp_port_addresses[RTE_MAX_ETHPORTS];
 	...
 
@@ -162,7 +162,7 @@ dp/pipeline/epc_packet_framework.c:
 	static inline void pkt_work_arp_icmp_key(struct rte_mbuf *pkt, void *arg)
 	{
 		...
-		if (eth_h->ether_type == rte_cpu_to_be_16(ETHER_TYPE_ARP)) {
+		if (eth_h->ether_type == rte_cpu_to_be_16(RTE_ETHER_TYPE_ARP)) {
 			...
 			if(...) {
 				...
@@ -173,19 +173,19 @@ dp/pipeline/epc_packet_framework.c:
 					{
 						printf("ARP requested IP address mismatches interface IP - discarding\n");
 					}
-					else if (arp_h->arp_op == rte_cpu_to_be_16(ARP_OP_REQUEST)) {
+					else if (arp_h->arp_op == rte_cpu_to_be_16(RTE_ARP_OP_REQUEST)) {
 						/* ASR- Send reply to ARP REQ */
 				        populate_arp_entry(&arp_h->arp_data.arp_sha, arp_h->arp_data.arp_sip, in_port_id);
 				        // build reply
 				        req_tip = arp_h->arp_data.arp_tip;
-				        ether_addr_copy(&eth_h->s_addr, &eth_h->d_addr);
-				        ether_addr_copy(arp_port_addresses[in_port_id].mac_addr, &eth_h->s_addr); // set sender mac address
+				        rte_ether_addr_copy(&eth_h->s_addr, &eth_h->d_addr);
+				        rte_ether_addr_copy(arp_port_addresses[in_port_id].mac_addr, &eth_h->s_addr); // set sender mac address
 						...
 						// send packet
 						...
 						rte_pipeline_port_out_packet_insert(myP, in_port_id, pkt1);
 					}
-				    else if (arp_h->arp_op == rte_cpu_to_be_16(ARP_OP_REPLY)) {
+				    else if (arp_h->arp_op == rte_cpu_to_be_16(RTE_ARP_OP_REPLY)) {
 						/* ASR- populate_arp_entry with the ARP_REPLY */
 						populate_arp_entry(&arp_h->arp_data.arp_sha, arp_h->arp_data.arp_sip, in_port_id);
 					}
@@ -214,7 +214,7 @@ dp/pipeline/epc_packet_framework.c:
 			/* add INCOMPLETE arp entry */
 			ret_arp_data = rte_malloc_socket(NULL, sizeof(struct arp_entry_data), RTE_CACHE_LINE_SIZE, rte_socket_id());
 			/* ASR- ARP ENTRY INCOMPLETE- null_ether_addr */
-			ether_addr_copy(&null_ether_addr, &ret_arp_data->eth_addr);
+			rte_ether_addr_copy(&null_ether_addr, &ret_arp_data->eth_addr);
 			ret_arp_data->status = INCOMPLETE;
 			ret_arp_data->port = arp_key.port_id;
 			ret_arp_data->ip = arp_key.ip;
@@ -232,7 +232,7 @@ dp/pipeline/epc_packet_framework.c:
 		return ret_arp_data;
 	}
 
-	static void populate_arp_entry(const struct ether_addr * hw_addr, uint32_t ipaddr, uint8_t portid)
+	static void populate_arp_entry(const struct rte_ether_addr * hw_addr, uint32_t ipaddr, uint8_t portid)
 	{
 		...
   		struct pipeline_arp_icmp_arp_key_ipv4 arp_key;
@@ -241,14 +241,14 @@ dp/pipeline/epc_packet_framework.c:
 		struct arp_entry_data* arp_data = retrieve_arp_entry(arp_key);
   		if (arp_data)
 		{
-    		if (is_same_ether_addr(&arp_data->eth_addr, hw_addr))	{
+    		if (rte_is_same_ether_addr(&arp_data->eth_addr, hw_addr))	{
 			...
 			printf("arp_entry exists ip%x, port %d\n", arp_key.ip, arp_key.port_id);
 	      	return;
 			}
 			else
 			{
-				ether_addr_copy(hw_addr, &arp_data->eth_addr);
+				rte_ether_addr_copy(hw_addr, &arp_data->eth_addr);
 	      		if (arp_data->status == INCOMPLETE) {
 					while (!rte_ring_empty(arp_data->queue))
 			  		{
@@ -262,7 +262,7 @@ dp/pipeline/epc_packet_framework.c:
 		else
 		{
     		arp_data = rte_malloc_socket(NULL, sizeof(struct arp_entry_data), RTE_CACHE_LINE_SIZE, rte_socket_id());
-		    ether_addr_copy(hw_addr, &arp_data->eth_addr);
+		    rte_ether_addr_copy(hw_addr, &arp_data->eth_addr);
 		    arp_data->status = COMPLETE;
 		    arp_data->port = portid;
 		    arp_data->ip = ipaddr;

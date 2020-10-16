@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright(c) 2017 Intel Corporation
+RTE_SDK ?= /home/qzhang/dpdk
 
 ifeq ($(RTE_SDK),)
 $(error "Please define RTE_SDK environment variable")
@@ -8,7 +9,8 @@ endif
 MAKEFLAGS += -j
 
 # Default target, can be overriden by command line or environment
-RTE_TARGET ?= x86_64-native-linuxapp-gcc
+# RTE_TARGET ?= x86_64-native-linuxapp-gcc
+RTE_TARGET ?= s390x-native-linux-gcc
 
 include $(RTE_SDK)/mk/rte.vars.mk
 include $(dir $(realpath $(firstword $(MAKEFILE_LIST))))/*.mk
@@ -77,7 +79,7 @@ CFLAGS += -DLDB_DP	# should be included for dataplane.
 
 CFLAGS += -DDP_BUILD
 
-CFLAGS += -Werror
+#CFLAGS += -Werror
 CFLAGS += -Wunused-variable
 
 # un-comment below line to Expose declaration of tdestroy()#
@@ -96,7 +98,8 @@ CFLAGS_dataplane.o += -Wno-return-type
 endif
 
 #dpdk-18.02 change build directory structure
-LDFLAGS += -L$(RTE_SRCDIR)/../lib/libsponsdn/x86_64-native-linuxapp-gcc/ -lsponsdn
+#LDFLAGS += -L$(RTE_SRCDIR)/../lib/libsponsdn/x86_64-native-linuxapp-gcc/ -lsponsdn
+LDFLAGS += -L$(RTE_SRCDIR)/s390x-native-linux-gcc/ -lsponsdn
 
 LDFLAGS += -lhs -lhs_runtime -lstdc++ -lm -lcrypto
 

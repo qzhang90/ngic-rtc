@@ -192,7 +192,7 @@ static inline void dp_print_usage(void)
 }
 
 /* parse ethernet address */
-static inline int parse_ether_addr(struct ether_addr *hwaddr, const char *str)
+static inline int parse_ether_addr(struct rte_ether_addr *hwaddr, const char *str)
 {
 	/* 01 34 67 90 23 56 */
 	/* XX:XX:XX:XX:XX:XX */
@@ -301,7 +301,7 @@ parse_config_args(struct app_params *app, int argc, char **argv)
 	int opt;
 	int option_index;
 	int i;
-	struct ether_addr mac_addr;
+	struct rte_ether_addr mac_addr;
 	uint64_t used_coremask = 0;
 #ifndef SGX_CDR
 	const char *master_cdr_file = NULL;
@@ -369,7 +369,7 @@ parse_config_args(struct app_params *app, int argc, char **argv)
 
 			for (i = 0; i < RTE_MAX_ETHPORTS; i++) {
 				rte_eth_macaddr_get(i, &mac_addr);
-				if (is_same_ether_addr
+				if (rte_is_same_ether_addr
 					(&app->s1u_ether_addr, &mac_addr)) {
 					printf("s1u port %d\n", i);
 					app->s1u_port = i;
@@ -401,7 +401,7 @@ parse_config_args(struct app_params *app, int argc, char **argv)
 
 			for (i = 0; i < RTE_MAX_ETHPORTS; i++) {
 				rte_eth_macaddr_get(i, &mac_addr);
-				if (is_same_ether_addr
+				if (rte_is_same_ether_addr
 					(&app->sgi_ether_addr, &mac_addr)) {
 					printf("sgi port %d\n", i);
 					app->sgi_port = i;
@@ -483,7 +483,7 @@ parse_config_args(struct app_params *app, int argc, char **argv)
 
 			for (i = 0; i < RTE_MAX_ETHPORTS; i++) {
 				rte_eth_macaddr_get(i, &mac_addr);
-				if (is_same_ether_addr
+				if (rte_is_same_ether_addr
 					(&app->s5s8_sgwu_ether_addr, &mac_addr)) {
 					printf("s5s8_sgwu port %d\n", i);
 					app->s5s8_sgwu_port = i;
@@ -565,7 +565,7 @@ parse_config_args(struct app_params *app, int argc, char **argv)
 
 			for (i = 0; i < RTE_MAX_ETHPORTS; i++) {
 				rte_eth_macaddr_get(i, &mac_addr);
-				if (is_same_ether_addr
+				if (rte_is_same_ether_addr
 					(&app->s5s8_pgwu_ether_addr, &mac_addr)) {
 					printf("s5s8_pgwu port %d\n", i);
 					app->s5s8_pgwu_port = i;

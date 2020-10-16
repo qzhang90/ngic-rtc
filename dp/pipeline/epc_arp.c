@@ -165,7 +165,7 @@ struct RouteInfo
 	char proto;
 	char ifName[IF_NAMESIZE];
 	/** mac address */
-	struct ether_addr gateWay_Mac;
+	struct rte_ether_addr gateWay_Mac;
 };
 
 /**
@@ -233,12 +233,12 @@ struct arp_port_address {
 	/** ipv4 address*/
 	uint32_t ip;
 	/** mac address */
-	struct ether_addr *mac_addr;
+	struct rte_ether_addr *mac_addr;
 };
 /**
  * ports mac address.
  */
-extern struct ether_addr ports_eth_addr[];
+extern struct rte_ether_addr ports_eth_addr[];
 /**
  * arp port address
  */
@@ -427,17 +427,17 @@ static const char *
 arp_op_name(uint16_t arp_op)
 {
 	switch (CHECK_ENDIAN_16(arp_op)) {
-	case (ARP_OP_REQUEST):
+	case (RTE_ARP_OP_REQUEST):
 		return "ARP Request";
-	case (ARP_OP_REPLY):
+	case (RTE_ARP_OP_REPLY):
 		return "ARP Reply";
-	case (ARP_OP_REVREQUEST):
+	case (RTE_ARP_OP_REVREQUEST):
 		return "Reverse ARP Request";
-	case (ARP_OP_REVREPLY):
+	case (RTE_ARP_OP_REVREPLY):
 		return "Reverse ARP Reply";
-	case (ARP_OP_INVREQUEST):
+	case (RTE_ARP_OP_INVREQUEST):
 		return "Peer Identify Request";
-	case (ARP_OP_INVREPLY):
+	case (RTE_ARP_OP_INVREPLY):
 		return "Peer Identify Reply";
 	default:
 		break;
@@ -446,23 +446,23 @@ arp_op_name(uint16_t arp_op)
 }
 
 static void
-print_icmp_packet(struct icmp_hdr *icmp_h)
+print_icmp_packet(struct rte_icmp_hdr *icmp_h)
 {
 	printf("  ICMP: type=%d (%s) code=%d id=%d seqnum=%d\n",
 			icmp_h->icmp_type,
-			(icmp_h->icmp_type == IP_ICMP_ECHO_REPLY ? "Reply" :
-			 (icmp_h->icmp_type == IP_ICMP_ECHO_REQUEST ? "Reqest" : "Undef")),
+			(icmp_h->icmp_type == RTE_IP_ICMP_ECHO_REPLY ? "Reply" :
+			 (icmp_h->icmp_type == RTE_IP_ICMP_ECHO_REQUEST ? "Reqest" : "Undef")),
 			icmp_h->icmp_code,
 			CHECK_ENDIAN_16(icmp_h->icmp_ident),
 			CHECK_ENDIAN_16(icmp_h->icmp_seq_nb));
 }
 
 static void
-print_ipv4_h(struct ipv4_hdr *ip_h)
+print_ipv4_h(struct rte_ipv4_hdr *ip_h)
 {
-	struct icmp_hdr *icmp_h =
-				(struct icmp_hdr *)((char *)ip_h +
-				sizeof(struct ipv4_hdr));
+	struct rte_icmp_hdr *icmp_h =
+				(struct rte_icmp_hdr *)((char *)ip_h +
+				sizeof(struct rte_ipv4_hdr));
 	printf(
 			"\tIPv4: Version=%d"
 			"\n\tHLEN=%d Type=%d Protocol=%d Length=%d\n",
@@ -482,27 +482,27 @@ print_ipv4_h(struct ipv4_hdr *ip_h)
 }
 
 static void
-print_arp_packet(struct arp_hdr *arp_h)
+print_arp_packet(struct rte_arp_hdr *arp_h)
 {
 	printf("  ARP:  hrd=%d proto=0x%04x hln=%d "
 			"pln=%d op=%u (%s)\n",
-			CHECK_ENDIAN_16(arp_h->arp_hrd),
-			CHECK_ENDIAN_16(arp_h->arp_pro), arp_h->arp_hln,
-			arp_h->arp_pln, CHECK_ENDIAN_16(arp_h->arp_op),
-			arp_op_name(arp_h->arp_op));
+			CHECK_ENDIAN_16(arp_h->arp_hardware),
+			CHECK_ENDIAN_16(arp_h->arp_protocol), arp_h->arp_hlen,
+			arp_h->arp_plen, CHECK_ENDIAN_16(arp_h->arp_opcode),
+			arp_op_name(arp_h->arp_opcode));
 
-	if (CHECK_ENDIAN_16(arp_h->arp_hrd) != ARP_HRD_ETHER) {
+	if (CHECK_ENDIAN_16(arp_h->arp_hardware) != RTE_ARP_HRD_ETHER) {
 		printf("incorrect arp_hrd format for IPv4 ARP (%d)\n",
-				(arp_h->arp_hrd));
-	} else if (CHECK_ENDIAN_16(arp_h->arp_pro) != ETHER_TYPE_IPv4) {
+				(arp_h->arp_hardware));
+	} else if (CHECK_ENDIAN_16(arp_h->arp_protocol) != RTE_ETHER_TYPE_IPV4) {
 		printf("incorrect arp_pro format for IPv4 ARP (%d)\n",
-				(arp_h->arp_pro));
-	} else if (arp_h->arp_hln != 6) {
+				(arp_h->arp_protocol));
+	} else if (arp_h->arp_hlen != 6) {
 		printf("incorrect arp_hln format for IPv4 ARP (%d)\n",
-				arp_h->arp_hln);
-	} else if (arp_h->arp_pln != 4) {
+				arp_h->arp_hlen);
+	} else if (arp_h->arp_plen != 4) {
 		printf("incorrect arp_pln format for IPv4 ARP (%d)\n",
-				arp_h->arp_pln);
+				arp_h->arp_plen);
 	} else {
 		printf("  sha=%02X:%02X:%02X:%02X:%02X:%02X",
 				arp_h->arp_data.arp_sha.addr_bytes[0],
@@ -540,7 +540,7 @@ print_arp_packet(struct arp_hdr *arp_h)
 }
 
 static void
-print_eth(struct ether_hdr *eth_h)
+print_eth(struct rte_ether_hdr *eth_h)
 {
 	printf("  ETH:  src=%02X:%02X:%02X:%02X:%02X:%02X",
 			eth_h->s_addr.addr_bytes[0],
@@ -563,23 +563,23 @@ void
 print_mbuf(const char *rx_tx, unsigned portid,
 			struct rte_mbuf *mbuf, unsigned line)
 {
-	struct ether_hdr *eth_h =
-			rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
-	struct arp_hdr *arp_h =
-				(struct arp_hdr *)((char *)eth_h +
-				sizeof(struct ether_hdr));
-	struct ipv4_hdr *ipv4_h =
-				(struct ipv4_hdr *)((char *)eth_h +
-				sizeof(struct ether_hdr));
+	struct rte_ether_hdr *eth_h =
+			rte_pktmbuf_mtod(mbuf, struct rte_ether_hdr *);
+	struct rte_arp_hdr *arp_h =
+				(struct rte_arp_hdr *)((char *)eth_h +
+				sizeof(struct rte_ether_hdr));
+	struct rte_ipv4_hdr *ipv4_h =
+				(struct rte_ipv4_hdr *)((char *)eth_h +
+				sizeof(struct rte_ether_hdr));
 
 	printf("%s(%u): on port %u pkt-len=%u nb-segs=%u\n",
 			rx_tx, line, portid, mbuf->pkt_len, mbuf->nb_segs);
 	print_eth(eth_h);
 	switch (rte_cpu_to_be_16(eth_h->ether_type)) {
-	case ETHER_TYPE_IPv4:
+	case RTE_ETHER_TYPE_IPV4:
 		print_ipv4_h(ipv4_h);
 		break;
-	case ETHER_TYPE_ARP:
+	case RTE_ETHER_TYPE_ARP:
 		print_arp_packet(arp_h);
 		break;
 	default:
@@ -752,7 +752,7 @@ print_arp_table(void)
 
 static void
 arp_send_buffered_pkts(struct rte_ring *queue,
-			const struct ether_addr *hw_addr, uint8_t portid)
+			const struct rte_ether_addr *hw_addr, uint8_t portid)
 {
 	unsigned ring_count = rte_ring_count(queue);
 	unsigned count = 0;
@@ -761,10 +761,10 @@ arp_send_buffered_pkts(struct rte_ring *queue,
 		struct rte_mbuf *pkt;
 		int ret = rte_ring_dequeue(queue, (void **) &pkt);
 		if (ret == 0) {
-			struct ether_hdr *e_hdr =
-				rte_pktmbuf_mtod(pkt, struct ether_hdr *);
-			ether_addr_copy(hw_addr, &e_hdr->d_addr);
-			ether_addr_copy(&ports_eth_addr[portid],
+			struct rte_ether_hdr *e_hdr =
+				rte_pktmbuf_mtod(pkt, struct rte_ether_hdr *);
+			rte_ether_addr_copy(hw_addr, &e_hdr->d_addr);
+			rte_ether_addr_copy(&ports_eth_addr[portid],
 					&e_hdr->s_addr);
 			if (rte_ring_enqueue(shared_ring[portid], pkt) == -ENOBUFS) {
 				rte_pktmbuf_free(pkt);
@@ -796,7 +796,7 @@ arp_send_buffered_pkts(struct rte_ring *queue,
 }
 
 static
-void process_arp_msg(const struct ether_addr *hw_addr,
+void process_arp_msg(const struct rte_ether_addr *hw_addr,
 		uint32_t ipaddr, uint8_t portid)
 {
 	struct arp_ipv4_key arp_key;
@@ -813,11 +813,11 @@ void process_arp_msg(const struct ether_addr *hw_addr,
 
 	if (arp_data) {
 		arp_data->last_update = time(NULL);
-		if (!(is_same_ether_addr(&arp_data->eth_addr, hw_addr))) {
+		if (!(rte_is_same_ether_addr(&arp_data->eth_addr, hw_addr))) {
 			/* ARP_RSP || ARP_REQ:
 			 * Copy hw_addr -> arp_data->eth_addr
 			 * */
-			ether_addr_copy(hw_addr, &arp_data->eth_addr);
+			rte_ether_addr_copy(hw_addr, &arp_data->eth_addr);
 			if (arp_data->status == INCOMPLETE) {
 				if (arp_data->queue) {
 					arp_send_buffered_pkts(
@@ -902,7 +902,7 @@ pkt_work_arp_key(
 	pkt_key_count++;
 	print_pkt1(pkt);
 
-	struct ether_hdr *eth_h = rte_pktmbuf_mtod(pkt, struct ether_hdr *);
+	struct rte_ether_hdr *eth_h = rte_pktmbuf_mtod(pkt, struct rte_ether_hdr *);
 
 	if ((eth_h->d_addr.addr_bytes[0] == 0x01)
 			&& (eth_h->d_addr.addr_bytes[1] == 0x80)
@@ -917,22 +917,22 @@ pkt_work_arp_key(
 	if (ARPICMP_DEBUG)
 		print_eth(eth_h);
 
-	if (eth_h->ether_type == rte_cpu_to_be_16(ETHER_TYPE_ARP)) {
-		struct arp_hdr *arp_h = (struct arp_hdr *)((char *)eth_h +
-								sizeof(struct ether_hdr));
+	if (eth_h->ether_type == rte_cpu_to_be_16(RTE_ETHER_TYPE_ARP)) {
+		struct rte_arp_hdr *arp_h = (struct rte_arp_hdr *)((char *)eth_h +
+								sizeof(struct rte_ether_hdr));
 		if (ARPICMP_DEBUG)
 			print_arp_packet(arp_h);
 
-		if (CHECK_ENDIAN_16(arp_h->arp_hrd) != ARP_HRD_ETHER) {
+		if (CHECK_ENDIAN_16(arp_h->arp_hardware) != RTE_ARP_HRD_ETHER) {
 			printf("Invalid hardware address format-"
 					"\nnot processing ARP_REQ\n");
-		} else if (CHECK_ENDIAN_16(arp_h->arp_pro) != ETHER_TYPE_IPv4) {
+		} else if (CHECK_ENDIAN_16(arp_h->arp_protocol) != RTE_ETHER_TYPE_IPV4) {
 			printf("Invalid protocol format-"
 					"\nnot processing ARP_REQ\n");
-		} else if (arp_h->arp_hln != 6) {
+		} else if (arp_h->arp_hlen != 6) {
 			printf("Invalid hardware address length-"
 					"\nnot processing ARP_REQ\n");
-		} else if (arp_h->arp_pln != 4) {
+		} else if (arp_h->arp_plen != 4) {
 			printf("Invalid protocol address length-"
 					"\nnot processing ARP_REQ\n");
 		} else {
@@ -954,16 +954,16 @@ pkt_work_arp_key(
 								&arp_port_addresses[in_port_id].ip)
 							);
 				}
-			} else if (arp_h->arp_op == rte_cpu_to_be_16(ARP_OP_REQUEST)) {
+			} else if (arp_h->arp_opcode == rte_cpu_to_be_16(RTE_ARP_OP_REQUEST)) {
 				/* ARP_REQ IP matches. Process ARP_REQ */
 				if (ARPICMP_DEBUG) {
 					printf(
 							"%s::"
-							"\n\tarp_op= %d; ARP_OP_REQUEST= %d"
+							"\n\tarp_op= %d; RTE_ARP_OP_REQUEST= %d"
 							"\n\tprint_mbuf=\n",
 							__func__,
-							arp_h->arp_op,
-							rte_cpu_to_be_16(ARP_OP_REQUEST));
+							arp_h->arp_opcode,
+							rte_cpu_to_be_16(RTE_ARP_OP_REQUEST));
 					print_mbuf("RX", in_port_id, pkt, __LINE__);
 				}
 				process_arp_msg(&arp_h->arp_data.arp_sha,
@@ -972,16 +972,16 @@ pkt_work_arp_key(
 #ifdef STATIC_ARP
 				/* Build ARP_RSP */
 				uint32_t req_tip = arp_h->arp_data.arp_tip;
-				ether_addr_copy(&eth_h->s_addr, &eth_h->d_addr);
-				ether_addr_copy(
+				rte_ether_addr_copy(&eth_h->s_addr, &eth_h->d_addr);
+				rte_ether_addr_copy(
 						arp_port_addresses[in_port_id].mac_addr,
 						&eth_h->s_addr);
-				arp_h->arp_op = rte_cpu_to_be_16(ARP_OP_REPLY);
-				ether_addr_copy(&eth_h->s_addr,
+				arp_h->arp_op = rte_cpu_to_be_16(RTE_ARP_OP_REPLY);
+				rte_ether_addr_copy(&eth_h->s_addr,
 						&arp_h->arp_data.arp_sha);
 				arp_h->arp_data.arp_tip = arp_h->arp_data.arp_sip;
 				arp_h->arp_data.arp_sip = req_tip;
-				ether_addr_copy(&eth_h->d_addr,
+				rte_ether_addr_copy(&eth_h->d_addr,
 						&arp_h->arp_data.arp_tha);
 				if (ARPICMP_DEBUG) {
 					print_mbuf("TX", in_port_id, pkt, __LINE__);
@@ -1001,7 +1001,7 @@ pkt_work_arp_key(
 				}
 #endif	/* STATIC_ARP */
 
-			} else if (arp_h->arp_op == rte_cpu_to_be_16(ARP_OP_REPLY)) {
+			} else if (arp_h->arp_opcode == rte_cpu_to_be_16(RTE_ARP_OP_REPLY)) {
 				/* Process ARP_RSP */
 				if (ARPICMP_DEBUG) {
 					printf(
@@ -1018,7 +1018,7 @@ pkt_work_arp_key(
 				if (ARPICMP_DEBUG)
 					printf("Invalid ARP_OPCODE= %X"
 							"\nnot processing ARP_REQ||ARP_RSP\n",
-							arp_h->arp_op);
+							arp_h->arp_opcode);
 			}
 		}
 	} else {
@@ -1070,7 +1070,7 @@ static int port_in_ah_arp_key(
 }
 
 static int
-parse_ether_addr(struct ether_addr *hw_addr, const char *str)
+parse_ether_addr(struct rte_ether_addr *hw_addr, const char *str)
 {
 	int ret = sscanf(str, "%"SCNx8":"
 			"%"SCNx8":"
@@ -1102,7 +1102,7 @@ add_static_arp_entry(struct rte_cfgfile_entry *entry,
 	uint32_t low_ip;
 	uint32_t high_ip;
 	uint32_t cur_ip;
-	struct ether_addr hw_addr;
+	struct rte_ether_addr hw_addr;
 	int ret;
 
 	low_ptr = strtok_r(entry->name, " \t", &saveptr);
@@ -1337,7 +1337,7 @@ static void add_route_data(
 		/* Route Entry not present. Add Route Entry */
 		if (gatway_flag != 1) {
 			info->gateWay = 0;
-			memset(&info->gateWay_Mac, 0, sizeof(struct ether_addr));
+			memset(&info->gateWay_Mac, 0, sizeof(struct rte_ether_addr));
 		}
 
 		ret = rte_hash_add_key_data(route_hash_handle,
@@ -1366,7 +1366,7 @@ static void add_route_data(
 			/* Route Entry not present. Add Route Entry */
 			if (gatway_flag != 1) {
 				info->gateWay = 0;
-				memset(&info->gateWay_Mac, 0, sizeof(struct ether_addr));
+				memset(&info->gateWay_Mac, 0, sizeof(struct rte_ether_addr));
 			}
 
 			ret = rte_hash_add_key_data(route_hash_handle,

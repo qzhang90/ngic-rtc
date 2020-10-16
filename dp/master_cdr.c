@@ -1,8 +1,10 @@
 /* SPDX-License-Identifier: Apache-2.0
  * Copyright(c) 2017 Intel Corporation
  */
+#ifndef _GNU_SOURCE
+	#define _GNU_SOURCE     /* Expose declaration of strptime() */
+#endif
 
-#define _GNU_SOURCE     /* Expose declaration of strptime() */
 #include <time.h>
 #include <openssl/md5.h>
 #include <sys/stat.h>

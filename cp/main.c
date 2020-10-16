@@ -503,24 +503,24 @@ dump_pcap(uint16_t payload_length, uint8_t *tx_buf)
 	static struct pcap_pkthdr pcap_tx_header;
 	gettimeofday(&pcap_tx_header.ts, NULL);
 	pcap_tx_header.caplen = payload_length
-			+ sizeof(struct ether_hdr)
-			+ sizeof(struct ipv4_hdr)
-			+ sizeof(struct udp_hdr);
+			+ sizeof(struct rte_ether_hdr)
+			+ sizeof(struct rte_ipv4_hdr)
+			+ sizeof(struct rte_udp_hdr);
 	pcap_tx_header.len = payload_length
-			+ sizeof(struct ether_hdr)
-			+ sizeof(struct ipv4_hdr)
-			+ sizeof(struct udp_hdr);
+			+ sizeof(struct rte_ether_hdr)
+			+ sizeof(struct rte_ipv4_hdr)
+			+ sizeof(struct rte_udp_hdr);
 	uint8_t dump_buf[MAX_GTPV2C_UDP_LEN
-			+ sizeof(struct ether_hdr)
-			+ sizeof(struct ipv4_hdr)
-			+ sizeof(struct udp_hdr)];
-	struct ether_hdr *eh = (struct ether_hdr *) dump_buf;
+			+ sizeof(struct rte_ether_hdr)
+			+ sizeof(struct rte_ipv4_hdr)
+			+ sizeof(struct rte_udp_hdr)];
+	struct rte_ether_hdr *eh = (struct rte_ether_hdr *) dump_buf;
 
-	memset(&eh->d_addr, '\0', sizeof(struct ether_addr));
-	memset(&eh->s_addr, '\0', sizeof(struct ether_addr));
-	eh->ether_type = htons(ETHER_TYPE_IPv4);
+	memset(&eh->d_addr, '\0', sizeof(struct rte_ether_addr));
+	memset(&eh->s_addr, '\0', sizeof(struct rte_ether_addr));
+	eh->ether_type = htons(RTE_ETHER_TYPE_IPV4);
 
-	struct ipv4_hdr *ih = (struct ipv4_hdr *) &eh[1];
+	struct rte_ipv4_hdr *ih = (struct rte_ipv4_hdr *) &eh[1];
 
 	ih->dst_addr = s11_mme_ip.s_addr;
 	ih->src_addr = s11_sgw_ip.s_addr;
@@ -528,14 +528,14 @@ dump_pcap(uint16_t payload_length, uint8_t *tx_buf)
 	ih->version_ihl = PCAP_VIHL;
 	ih->total_length =
 			ntohs(payload_length
-				+ sizeof(struct udp_hdr)
-				+ sizeof(struct ipv4_hdr));
+				+ sizeof(struct rte_udp_hdr)
+				+ sizeof(struct rte_ipv4_hdr));
 	ih->time_to_live = PCAP_TTL;
 
-	struct udp_hdr *uh = (struct udp_hdr *) &ih[1];
+	struct rte_udp_hdr *uh = (struct rte_udp_hdr *) &ih[1];
 
 	uh->dgram_len = htons(
-	    ntohs(ih->total_length) - sizeof(struct ipv4_hdr));
+	    ntohs(ih->total_length) - sizeof(struct rte_ipv4_hdr));
 	uh->dst_port = htons(GTPC_UDP_PORT);
 	uh->src_port = htons(GTPC_UDP_PORT);
 
@@ -583,13 +583,13 @@ control_plane(void)
 			exit(0);
 		}
 		bytes_pcap_rx = pcap_rx_header->caplen
-				- (sizeof(struct ether_hdr)
-				+ sizeof(struct ipv4_hdr)
-				+ sizeof(struct udp_hdr));
+				- (sizeof(struct rte_ether_hdr)
+				+ sizeof(struct rte_ipv4_hdr)
+				+ sizeof(struct rte_udp_hdr));
 		memcpy(gtpv2c_s11_rx, *tmp
-				+ (sizeof(struct ether_hdr)
-				+ sizeof(struct ipv4_hdr)
-				+ sizeof(struct udp_hdr)), bytes_pcap_rx);
+				+ (sizeof(struct rte_ether_hdr)
+				+ sizeof(struct rte_ipv4_hdr)
+				+ sizeof(struct rte_udp_hdr)), bytes_pcap_rx);
 	}
 
 	if (spgw_cfg == SGWC) {
@@ -1241,7 +1241,7 @@ ddn_by_session_id(uint64_t session_id) {
  */
 #ifndef ZMQ_COMM
 static int
-cb_ddn(struct msgbuf *msg_payload)
+cb_ddn(struct ngic_rtc_msgbuf *msg_payload)
 #else
 int
 cb_ddn(uint64_t sess_id)

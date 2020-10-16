@@ -180,14 +180,14 @@ int encap_gtpu_hdr_without_seqnb(struct rte_mbuf *m, uint32_t teid)
 uint32_t gtpu_inner_src_ip_dynamic_seqnb(struct rte_mbuf *m)
 {
 	uint8_t *pkt_ptr;
-	struct ipv4_hdr *inner_ipv4_hdr;
+	struct rte_ipv4_hdr *inner_ipv4_hdr;
 
 	pkt_ptr = (uint8_t *) get_mtogtpu(m);
 	RTE_LOG_DP(DEBUG, DP, "ASR-SpirentvLS gtpu.c: GPDU_HDR_SIZE %u\n",
 			GPDU_HDR_SIZE_DYNAMIC(*pkt_ptr));
 
 	pkt_ptr += GPDU_HDR_SIZE_DYNAMIC(*pkt_ptr);
-	inner_ipv4_hdr = (struct ipv4_hdr *)pkt_ptr;
+	inner_ipv4_hdr = (struct rte_ipv4_hdr *)pkt_ptr;
 
 	return inner_ipv4_hdr->src_addr;
 }
@@ -195,14 +195,14 @@ uint32_t gtpu_inner_src_ip_dynamic_seqnb(struct rte_mbuf *m)
 uint32_t gtpu_inner_src_ip_with_seqnb(struct rte_mbuf *m)
 {
 	uint8_t *pkt_ptr;
-	struct ipv4_hdr *inner_ipv4_hdr;
+	struct rte_ipv4_hdr *inner_ipv4_hdr;
 
 	pkt_ptr = (uint8_t *) get_mtogtpu(m);
 	RTE_LOG(DEBUG, DP, "ASR-SpirentvLS gtpu.c: GPDU_HDR_SIZE %u\n",
 			GPDU_HDR_SIZE_WITH_SEQNB);
 
 	pkt_ptr += GPDU_HDR_SIZE_WITH_SEQNB;
-	inner_ipv4_hdr = (struct ipv4_hdr *)pkt_ptr;
+	inner_ipv4_hdr = (struct rte_ipv4_hdr *)pkt_ptr;
 
 	return inner_ipv4_hdr->src_addr;
 }
@@ -210,14 +210,14 @@ uint32_t gtpu_inner_src_ip_with_seqnb(struct rte_mbuf *m)
 uint32_t gtpu_inner_src_ip_without_seqnb(struct rte_mbuf *m)
 {
 	uint8_t *pkt_ptr;
-	struct ipv4_hdr *inner_ipv4_hdr;
+	struct rte_ipv4_hdr *inner_ipv4_hdr;
 
 	pkt_ptr = (uint8_t *) get_mtogtpu(m);
 	RTE_LOG(DEBUG, DP, "ASR-SpirentvLS gtpu.c: GPDU_HDR_SIZE %u\n",
 			GPDU_HDR_SIZE_WITHOUT_SEQNB);
 
 	pkt_ptr += GPDU_HDR_SIZE_WITHOUT_SEQNB;
-	inner_ipv4_hdr = (struct ipv4_hdr *)pkt_ptr;
+	inner_ipv4_hdr = (struct rte_ipv4_hdr *)pkt_ptr;
 
 	return inner_ipv4_hdr->src_addr;
 }
@@ -226,12 +226,12 @@ void gtpu_get_inner_src_dst_ip_dynamic_seqnb(struct rte_mbuf *m,
 		uint32_t *src_ip, uint32_t *dst_ip)
 {
 	uint8_t *pkt_ptr = NULL;
-	struct ipv4_hdr *inner_ipv4_hdr = NULL;
+	struct rte_ipv4_hdr *inner_ipv4_hdr = NULL;
 
 	pkt_ptr = (uint8_t *) get_mtogtpu(m);
 
 	pkt_ptr += GPDU_HDR_SIZE_DYNAMIC(*pkt_ptr);
-	inner_ipv4_hdr = (struct ipv4_hdr *)pkt_ptr;
+	inner_ipv4_hdr = (struct rte_ipv4_hdr *)pkt_ptr;
 
 	*src_ip = inner_ipv4_hdr->src_addr;
 	*dst_ip = inner_ipv4_hdr->dst_addr;
@@ -241,12 +241,12 @@ void gtpu_get_inner_src_dst_ip_with_seqnb(struct rte_mbuf *m,
 		uint32_t *src_ip, uint32_t *dst_ip)
 {
 	uint8_t *pkt_ptr = NULL;
-	struct ipv4_hdr *inner_ipv4_hdr = NULL;
+	struct rte_ipv4_hdr *inner_ipv4_hdr = NULL;
 
 	pkt_ptr = (uint8_t *) get_mtogtpu(m);
 
 	pkt_ptr += GPDU_HDR_SIZE_WITH_SEQNB;
-	inner_ipv4_hdr = (struct ipv4_hdr *)pkt_ptr;
+	inner_ipv4_hdr = (struct rte_ipv4_hdr *)pkt_ptr;
 
 	*src_ip = inner_ipv4_hdr->src_addr;
 	*dst_ip = inner_ipv4_hdr->dst_addr;
@@ -256,12 +256,12 @@ void gtpu_get_inner_src_dst_ip_without_seqnb(struct rte_mbuf *m,
 		uint32_t *src_ip, uint32_t *dst_ip)
 {
 	uint8_t *pkt_ptr = NULL;
-	struct ipv4_hdr *inner_ipv4_hdr = NULL;
+	struct rte_ipv4_hdr *inner_ipv4_hdr = NULL;
 
 	pkt_ptr = (uint8_t *) get_mtogtpu(m);
 
 	pkt_ptr += GPDU_HDR_SIZE_WITHOUT_SEQNB;
-	inner_ipv4_hdr = (struct ipv4_hdr *)pkt_ptr;
+	inner_ipv4_hdr = (struct rte_ipv4_hdr *)pkt_ptr;
 
 	*src_ip = inner_ipv4_hdr->src_addr;
 	*dst_ip = inner_ipv4_hdr->dst_addr;

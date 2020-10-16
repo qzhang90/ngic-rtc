@@ -108,9 +108,9 @@ void scan_dns_ring(__rte_unused void *args)
 	if (ret == 0) {
 		/* DNSTODO: IP header with options */
 		unsigned dns_payload_off =
-			sizeof(struct ether_hdr) +
-			sizeof(struct ipv4_hdr) +
-			sizeof(struct udp_hdr);
+			sizeof(struct rte_ether_hdr) +
+			sizeof(struct rte_ipv4_hdr) +
+			sizeof(struct rte_udp_hdr);
 		int addr4_cnt;
 		struct in_addr addr4[100];
 		unsigned match_id;

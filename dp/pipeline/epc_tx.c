@@ -32,13 +32,13 @@ void epc_tx_init(struct epc_tx_params *param, int core, uint8_t port)
 	struct rte_pipeline *p;
 	int wr_core;
 
-	if (rte_eth_dev_socket_id(port) != (int)lcore_config[core].socket_id) {
-		RTE_LOG_DP(WARNING, EPC,
-			"location of the TX core for port=%d is not optimal\n",
-			port);
-		RTE_LOG_DP(WARNING, EPC,
-			"****** performance may be degradated !!!!!!!!!!! *************\n");
-	}
+	// if (rte_eth_dev_socket_id(port) != (int)lcore_config[core].socket_id) {
+	// 	RTE_LOG_DP(WARNING, EPC,
+	// 		"location of the TX core for port=%d is not optimal\n",
+	// 		port);
+	// 	RTE_LOG_DP(WARNING, EPC,
+	// 		"****** performance may be degradated !!!!!!!!!!! *************\n");
+	// }
 
 	switch (app.spgw_cfg) {
 		case SGWU:

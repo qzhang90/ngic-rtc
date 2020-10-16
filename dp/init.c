@@ -83,15 +83,13 @@ uint32_t nb_ports = 0 ;
  */
 const struct rte_eth_conf port_conf_default = {
     .rxmode = {
-        .max_rx_pkt_len = ETHER_MAX_LEN,
+        .max_rx_pkt_len = RTE_ETHER_MAX_LEN,
         .offloads =
             DEV_RX_OFFLOAD_IPV4_CKSUM |
             DEV_RX_OFFLOAD_UDP_CKSUM |
             DEV_RX_OFFLOAD_TCP_CKSUM |
             DEV_RX_OFFLOAD_OUTER_IPV4_CKSUM |
-            DEV_RX_OFFLOAD_CRC_STRIP,
-        /* Enable hw_crc_strip for PF/VF drivers */
-        .hw_strip_crc = 1}
+            DEV_RX_OFFLOAD_KEEP_CRC}
 };
 
 struct rte_ring *shared_ring[NUM_SPGW_PORTS] = {NULL, NULL};
@@ -126,7 +124,7 @@ static inline int port_init(uint8_t port, struct rte_mempool *mbuf_pool)
 	int retval;
 	uint16_t q;
 
-	if (port >= rte_eth_dev_count())
+	if (port >= rte_eth_dev_count_avail())
 		return -1;
 	/* TODO: use q 1 for arp */
 
@@ -298,7 +296,7 @@ void dp_port_init(void)
 		SGI_PORT = 1
 	};
 
-	nb_ports = rte_eth_dev_count();
+	nb_ports = rte_eth_dev_count_avail();
 	printf ("nb_ports cnt is %u\n", nb_ports);
 	if (nb_ports < 2 || (nb_ports & 1))
 		rte_exit(EXIT_FAILURE, "Error: number of ports must be two\n");

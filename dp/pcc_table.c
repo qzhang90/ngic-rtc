@@ -117,7 +117,7 @@ dp_pcc_entry_delete(struct dp_id dp_id, struct pcc_rules *entry)
  *	- -1 Failure.
  */
 static int
-cb_pcc_table_create(struct msgbuf *msg_payload)
+cb_pcc_table_create(struct ngic_rtc_msgbuf *msg_payload)
 {
 	return pcc_table_create(msg_payload->dp_id,
 				msg_payload->msg_union.msg_table.max_elements);
@@ -133,7 +133,7 @@ cb_pcc_table_create(struct msgbuf *msg_payload)
  *	- -1 Failure.
  */
 static int
-cb_pcc_table_delete(struct msgbuf *msg_payload)
+cb_pcc_table_delete(struct ngic_rtc_msgbuf *msg_payload)
 {
 	return pcc_table_delete(msg_payload->dp_id);
 }
@@ -148,7 +148,7 @@ cb_pcc_table_delete(struct msgbuf *msg_payload)
  *	- -1 Failure.
  */
 static int
-cb_pcc_entry_add(struct msgbuf *msg_payload)
+cb_pcc_entry_add(struct ngic_rtc_msgbuf *msg_payload)
 {
 	return pcc_entry_add(msg_payload->dp_id,
 					msg_payload->msg_union.pcc_entry);
@@ -163,7 +163,7 @@ cb_pcc_entry_add(struct msgbuf *msg_payload)
  *	- -1 Failure.
  */
 static int
-cb_pcc_entry_delete(struct msgbuf *msg_payload)
+cb_pcc_entry_delete(struct ngic_rtc_msgbuf *msg_payload)
 {
 	return pcc_entry_delete(msg_payload->dp_id,
 					msg_payload->msg_union.pcc_entry);

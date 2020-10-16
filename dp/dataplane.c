@@ -46,8 +46,8 @@ gtpu_decap(struct rte_mbuf **pkts, uint32_t n,
 {
 	uint32_t i;
 	int ret = 0;
-	struct ipv4_hdr *ipv4_hdr;
-	struct udp_hdr *udp_hdr;
+	struct rte_ipv4_hdr *ipv4_hdr;
+	struct rte_udp_hdr *udp_hdr;
 	struct gtpu_hdr *gtpu_hdr;
 	struct epc_meta_data *meta_data;
 
@@ -250,8 +250,8 @@ ul_sess_info_get(struct rte_mbuf **pkts, uint32_t n,
 			}
 
 			case SGWU: {
-				struct ipv4_hdr *ipv4_hdr = NULL;
-				struct udp_hdr *udp_hdr = NULL;
+				struct rte_ipv4_hdr *ipv4_hdr = NULL;
+				struct rte_udp_hdr *udp_hdr = NULL;
 				struct gtpu_hdr *gtpu_hdr = NULL;
 
 				/* reject if not with s1u ip */
@@ -307,7 +307,7 @@ adc_ue_info_get(struct rte_mbuf **pkts, uint32_t n, uint32_t *res,
 {
 	uint32_t j;
 	struct dl_bm_key key[MAX_BURST_SZ];
-	struct ipv4_hdr *ipv4_hdr;
+	struct rte_ipv4_hdr *ipv4_hdr;
 	void *key_ptr[MAX_BURST_SZ];
 	uint64_t hit_mask = 0;
 
@@ -339,7 +339,7 @@ dl_sess_info_get(struct rte_mbuf **pkts, uint32_t n,
 	uint32_t j;
 	struct dl_bm_key key[MAX_BURST_SZ];
 	void *key_ptr[MAX_BURST_SZ];
-	struct ipv4_hdr *ipv4_hdr = NULL;
+	struct rte_ipv4_hdr *ipv4_hdr = NULL;
 	uint32_t dst_addr = 0;
 	uint64_t hit_mask = 0;
 
@@ -355,7 +355,7 @@ dl_sess_info_get(struct rte_mbuf **pkts, uint32_t n,
 
 		switch (app.spgw_cfg) {
 			case SGWU: {
-				struct udp_hdr *udp_hdr = NULL;
+				struct rte_udp_hdr *udp_hdr = NULL;
 				struct gtpu_hdr *gtpu_hdr = NULL;
 
 				/* reject if not with s1u ip */
@@ -380,7 +380,7 @@ dl_sess_info_get(struct rte_mbuf **pkts, uint32_t n,
 
 				uint8_t *pkt_ptr = (uint8_t *) gtpu_hdr;
 				pkt_ptr += GPDU_HDR_SIZE_DYNAMIC(*pkt_ptr);
-				ipv4_hdr = (struct ipv4_hdr *)pkt_ptr;
+				ipv4_hdr = (struct rte_ipv4_hdr *)pkt_ptr;
 				dst_addr = ntohl(ipv4_hdr->dst_addr);
 				break;
 			}
@@ -522,14 +522,14 @@ update_cdr(struct ipcan_dp_bearer_cdr *cdr, struct rte_mbuf *pkt,
 				uint32_t flow, enum pkt_action_t action)
 {
 	uint32_t charged_len;
-	struct ipv4_hdr *ip_h = NULL;
+	struct rte_ipv4_hdr *ip_h = NULL;
 
-	ip_h = rte_pktmbuf_mtod_offset(pkt, struct ipv4_hdr *,
-			sizeof(struct ether_hdr));
+	ip_h = rte_pktmbuf_mtod_offset(pkt, struct rte_ipv4_hdr *,
+			sizeof(struct rte_ether_hdr));
 
 	charged_len =
 			RTE_MIN(rte_pktmbuf_pkt_len(pkt) -
-					sizeof(struct ether_hdr),
+					sizeof(struct rte_ether_hdr),
 					ntohs(ip_h->total_length));
 
 	if (action == CHARGED) {
@@ -706,8 +706,8 @@ update_extended_cdr(struct rte_mbuf **pkts, uint32_t n,
 	struct dp_pcc_rules *pcc_info = NULL;
 
 	for (i = 0; i < n; i++) {
-		struct ether_hdr *eth_hdr = rte_pktmbuf_mtod(pkts[i], void *);
-		struct ipv4_hdr *ipv4_hdr = (struct ipv4_hdr *)&eth_hdr[1];
+		struct rte_ether_hdr *eth_hdr = rte_pktmbuf_mtod(pkts[i], void *);
+		struct rte_ipv4_hdr *ipv4_hdr = (struct rte_ipv4_hdr *)&eth_hdr[1];
 
 		struct in_addr sip_addr;
 		struct in_addr dip_addr;
@@ -740,7 +740,7 @@ adc_hash_lookup(struct rte_mbuf **pkts, uint32_t n, uint32_t *rid, uint8_t flow)
 	uint32_t *key_ptr[MAX_BURST_SZ];
 	uint64_t hit_mask = 0;
 	struct msg_adc *data[MAX_BURST_SZ];
-	struct ipv4_hdr *ipv4_hdr;
+	struct rte_ipv4_hdr *ipv4_hdr;
 
 	for (j = 0; j < n; j++) {
 		ipv4_hdr = get_mtoip(pkts[j]);
@@ -766,11 +766,11 @@ adc_hash_lookup(struct rte_mbuf **pkts, uint32_t n, uint32_t *rid, uint8_t flow)
 
 static inline bool is_dns_pkt(struct rte_mbuf *m, uint32_t rid)
 {
-	struct ipv4_hdr *ip_hdr;
-	struct ether_hdr *eth_hdr;
+	struct rte_ipv4_hdr *ip_hdr;
+	struct rte_ether_hdr *eth_hdr;
 
-	eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr *);
-	ip_hdr = (struct ipv4_hdr *)(eth_hdr + 1);
+	eth_hdr = rte_pktmbuf_mtod(m, struct rte_ether_hdr *);
+	ip_hdr = (struct rte_ipv4_hdr *)(eth_hdr + 1);
 
 	if (rte_ipv4_frag_pkt_is_fragmented(ip_hdr))
 		return false;

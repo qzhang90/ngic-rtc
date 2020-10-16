@@ -32,7 +32,7 @@
 
 #define TX_QUEUE 1
 
-struct ether_addr mac = {0};
+struct rte_ether_addr mac = {0};
 /* Macros for printing using RTE_LOG */
 
 unsigned int fd_array[2];
@@ -319,7 +319,7 @@ kni_change_mtu(uint16_t port_id, unsigned int new_mtu)
 	struct rte_eth_dev_info dev_info;
 	struct rte_eth_rxconf rxq_conf;
 
-	if (port_id >= rte_eth_dev_count()) {
+	if (port_id >= rte_eth_dev_count_avail()) {
 		RTE_LOG_DP(ERR, KNI, "Invalid port id %d\n", port_id);
 		return -EINVAL;
 	}
@@ -331,7 +331,7 @@ kni_change_mtu(uint16_t port_id, unsigned int new_mtu)
 
 	memcpy(&conf, &port_conf_default, sizeof(conf));
 	/* Set new MTU */
-	if (new_mtu > ETHER_MAX_LEN)
+	if (new_mtu > RTE_ETHER_MAX_LEN)
 		conf.rxmode.offloads |= DEV_RX_OFFLOAD_JUMBO_FRAME;
 	else
 		conf.rxmode.offloads &= ~DEV_RX_OFFLOAD_JUMBO_FRAME;
@@ -399,7 +399,7 @@ kni_config_network_interface(uint16_t port_id, uint8_t if_up)
 {
 	int ret = 0;
 
-	if (port_id >= rte_eth_dev_count() || port_id >= RTE_MAX_ETHPORTS) {
+	if (port_id >= rte_eth_dev_count_avail() || port_id >= RTE_MAX_ETHPORTS) {
 		RTE_LOG_DP(ERR, KNI, "Invalid port id %d\n", port_id);
 		return -EINVAL;
 	}
@@ -453,10 +453,10 @@ kni_config_network_interface(uint16_t port_id, uint8_t if_up)
 }
 
 static void
-print_ethaddr(const char *name, struct ether_addr *mac_addr)
+print_ethaddr(const char *name, struct rte_ether_addr *mac_addr)
 {
-	char buf[ETHER_ADDR_FMT_SIZE];
-	ether_format_addr(buf, ETHER_ADDR_FMT_SIZE, mac_addr);
+	char buf[RTE_ETHER_ADDR_FMT_SIZE];
+	rte_ether_format_addr(buf, RTE_ETHER_ADDR_FMT_SIZE, mac_addr);
 	RTE_LOG_DP(INFO, KNI, "\t%s%s\n", name, buf);
 }
 
@@ -469,16 +469,16 @@ kni_config_mac_address(uint16_t port_id, uint8_t mac_addr[])
 {
 	int ret = 0;
 
-	if (port_id >= rte_eth_dev_count() || port_id >= RTE_MAX_ETHPORTS) {
+	if (port_id >= rte_eth_dev_count_avail() || port_id >= RTE_MAX_ETHPORTS) {
 		RTE_LOG_DP(ERR, KNI, "Invalid port id %d\n", port_id);
 		return -EINVAL;
 	}
 
 	RTE_LOG_DP(INFO, KNI, "Configure mac address of %d\n", port_id);
-	print_ethaddr("Address:", (struct ether_addr *)mac_addr);
+	print_ethaddr("Address:", (struct rte_ether_addr *)mac_addr);
 
 	ret = rte_eth_dev_default_mac_addr_set(port_id,
-					       (struct ether_addr *)mac_addr);
+					       (struct rte_ether_addr *)mac_addr);
 	if (ret < 0)
 		RTE_LOG_DP(ERR, KNI, "Failed to config mac_addr for port %d\n",
 			port_id);
@@ -526,7 +526,7 @@ kni_alloc(uint16_t port_id)
 
 		/* Get the interface default mac address */
 		rte_eth_macaddr_get(port_id,
-				(struct ether_addr*)&conf.mac_addr);
+				(struct rte_ether_addr*)&conf.mac_addr);
 		/*
 		 * The first KNI device associated to a port
 		 * is the master, for multiple kernel thread
@@ -538,10 +538,10 @@ kni_alloc(uint16_t port_id)
 
 			memset(&dev_info, 0, sizeof(dev_info));
 			rte_eth_dev_info_get(port_id, &dev_info);
-			if (dev_info.pci_dev) {
-				conf.addr = dev_info.pci_dev->addr;
-				conf.id = dev_info.pci_dev->id;
-			}
+			// if (dev_info.pci_dev) {
+			// 	conf.addr = dev_info.pci_dev->addr;
+			// 	conf.id = dev_info.pci_dev->id;
+			// }
 
 			rte_eth_dev_get_mtu(port_id, &conf.mtu);
 
@@ -568,7 +568,7 @@ kni_alloc(uint16_t port_id)
 void
 free_kni_ports(void) {
 	uint8_t ports = 0;
-	uint16_t nb_sys_ports = rte_eth_dev_count();
+	uint16_t nb_sys_ports = rte_eth_dev_count_avail();
 
 	rte_kni_close();
 	for (ports = 0; ports < nb_sys_ports; ports++) {

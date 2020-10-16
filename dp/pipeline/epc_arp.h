@@ -78,7 +78,7 @@ struct arp_entry_data {
 	/** ipv4 address */
 	uint32_t ip;
 	/** ether address */
-	struct ether_addr eth_addr;
+	struct rte_ether_addr eth_addr;
 	/** status: COMPLETE/INCOMPLETE */
 	uint8_t status;
 	/** last update time */
@@ -130,7 +130,7 @@ int send_arp_req(unsigned port_id, uint32_t ip);
  */
 int arp_icmp_get_dest_mac_address(__rte_unused const uint32_t ipaddr,
 		const uint32_t phy_port,
-		struct ether_addr *hw_addr, uint32_t *nhip);
+		struct rte_ether_addr *hw_addr, uint32_t *nhip);
 
 /**
  * Retrieve ARP entry.

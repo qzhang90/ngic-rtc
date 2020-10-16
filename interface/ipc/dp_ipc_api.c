@@ -21,7 +21,7 @@
 #include "dp_ipc_api.h"
 
 void iface_ipc_register_msg_cb(int msg_id,
-				int (*msg_cb)(struct msgbuf *msg_payload))
+				int (*msg_cb)(struct ngic_rtc_msgbuf *msg_payload))
 {
 	struct ipc_node *node;
 
@@ -61,7 +61,7 @@ int iface_remove_que(enum cp_dp_comm id)
 	RTE_SET_USED(id);
 
 	if (comm_node[id].recv((void *)&rbuf,
-				sizeof(struct msgbuf)) < 0) {
+				sizeof(struct ngic_rtc_msgbuf)) < 0) {
 		perror("msgrecv");
 		return -1;
 	}
@@ -88,7 +88,7 @@ int iface_remove_que(enum cp_dp_comm id)
 	if (id == COMM_ZMQ) {
 		int rc;
 
-		rc = comm_node[id].recv((void *)&rbuf, sizeof(struct msgbuf));
+		rc = comm_node[id].recv((void *)&rbuf, sizeof(struct ngic_rtc_msgbuf));
 
 		if (rc <= 0)
 			return rc;
@@ -97,7 +97,7 @@ int iface_remove_que(enum cp_dp_comm id)
 #else
 	if (id == COMM_SOCKET) {
 		if (comm_node[id].recv((void *)&rbuf,
-					sizeof(struct msgbuf)) < 0) {
+					sizeof(struct ngic_rtc_msgbuf)) < 0) {
 			perror("msgrecv");
 			return -1;
 		}

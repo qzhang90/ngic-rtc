@@ -21,14 +21,14 @@ typedef struct gtpu_recovery_ie_t {
  */
 static void reset_req_pkt_as_resp(struct rte_mbuf *echo_pkt) {
 	/* Swap src and destination mac addresses */
-	struct ether_hdr *eth_h = rte_pktmbuf_mtod(echo_pkt, struct ether_hdr *);
-	struct ether_addr tmp_mac;
-	ether_addr_copy(&eth_h->d_addr, &tmp_mac);
-	ether_addr_copy(&eth_h->s_addr, &eth_h->d_addr);
-	ether_addr_copy(&tmp_mac, &eth_h->s_addr);
+	struct rte_ether_hdr *eth_h = rte_pktmbuf_mtod(echo_pkt, struct rte_ether_hdr *);
+	struct rte_ether_addr tmp_mac;
+	rte_ether_addr_copy(&eth_h->d_addr, &tmp_mac);
+	rte_ether_addr_copy(&eth_h->s_addr, &eth_h->d_addr);
+	rte_ether_addr_copy(&tmp_mac, &eth_h->s_addr);
 
 	/* Swap src and dst IP addresses */
-	struct ipv4_hdr *ip_hdr = get_mtoip(echo_pkt);
+	struct rte_ipv4_hdr *ip_hdr = get_mtoip(echo_pkt);
 	uint32_t tmp_ip = ip_hdr->dst_addr;
 	ip_hdr->dst_addr = ip_hdr->src_addr;
 	ip_hdr->src_addr = tmp_ip;
@@ -36,7 +36,7 @@ static void reset_req_pkt_as_resp(struct rte_mbuf *echo_pkt) {
 			sizeof(gtpu_recovery_ie));
 
 	/* Swap src and dst UDP ports */
-	struct udp_hdr *udphdr = get_mtoudp(echo_pkt);
+	struct rte_udp_hdr *udphdr = get_mtoudp(echo_pkt);
 	uint16_t tmp_port = udphdr->dst_port;
 	udphdr->dst_port = udphdr->src_port;
 	udphdr->src_port = tmp_port;
@@ -49,13 +49,13 @@ static void reset_req_pkt_as_resp(struct rte_mbuf *echo_pkt) {
  * Return: void
  */
 static int set_recovery(struct rte_mbuf *echo_pkt) {
-	struct ipv4_hdr *ip_hdr = get_mtoip(echo_pkt);
+	struct rte_ipv4_hdr *ip_hdr = get_mtoip(echo_pkt);
 	struct gtpu_hdr *gtpu_hdr = get_mtogtpu(echo_pkt);
 	gtpu_recovery_ie *recovery_ie = NULL;
-	if (echo_pkt->pkt_len - (ETHER_HDR_LEN +(ip_hdr->total_length))) {
+	if (echo_pkt->pkt_len - (RTE_ETHER_HDR_LEN +(ip_hdr->total_length))) {
 		recovery_ie = (gtpu_recovery_ie*)((char*)gtpu_hdr+
 				GTPU_HDR_SIZE + ntohs(gtpu_hdr->msglen));
-	} else if ((echo_pkt->pkt_len - (ETHER_HDR_LEN +(ip_hdr->total_length))) == 0) {
+	} else if ((echo_pkt->pkt_len - (RTE_ETHER_HDR_LEN +(ip_hdr->total_length))) == 0) {
 		recovery_ie = (gtpu_recovery_ie *)rte_pktmbuf_append(echo_pkt,
 				(sizeof(gtpu_recovery_ie)));
 	}
@@ -80,9 +80,9 @@ static int set_recovery(struct rte_mbuf *echo_pkt) {
  * Return: void
  */
 static void set_checksum(struct rte_mbuf *echo_pkt) {
-	struct ipv4_hdr *ipv4hdr = get_mtoip(echo_pkt);
+	struct rte_ipv4_hdr *ipv4hdr = get_mtoip(echo_pkt);
 	ipv4hdr->hdr_checksum = 0;
-	struct udp_hdr *udphdr = get_mtoudp(echo_pkt);
+	struct rte_udp_hdr *udphdr = get_mtoudp(echo_pkt);
 	udphdr->dgram_cksum = 0;
 	udphdr->dgram_cksum = rte_ipv4_udptcp_cksum(ipv4hdr, udphdr);
 	ipv4hdr->hdr_checksum = rte_ipv4_cksum(ipv4hdr);

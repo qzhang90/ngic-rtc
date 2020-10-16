@@ -26,9 +26,9 @@
  * @return
  *	address to l2 hdr
  */
-static inline struct ether_hdr *get_mtoeth(struct rte_mbuf *m)
+static inline struct rte_ether_hdr *get_mtoeth(struct rte_mbuf *m)
 {
-	return (struct ether_hdr *)rte_pktmbuf_mtod(m, unsigned char *);
+	return (struct rte_ether_hdr *)rte_pktmbuf_mtod(m, unsigned char *);
 }
 
 /**

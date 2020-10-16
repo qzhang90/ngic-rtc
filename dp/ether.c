@@ -30,7 +30,7 @@ static struct sockaddr_in dest_addr[2];
  */
 static inline void set_ether_type(struct rte_mbuf *m, uint16_t type)
 {
-	struct ether_hdr *eth_hdr = get_mtoeth(m);
+	struct rte_ether_hdr *eth_hdr = get_mtoeth(m);
 	/* src/dst mac will be updated by send_to() */
 	eth_hdr->ether_type = htons(type);
 }
@@ -48,8 +48,8 @@ static inline void set_ether_type(struct rte_mbuf *m, uint16_t type)
 int construct_ether_hdr(struct rte_mbuf *m, uint8_t portid,
 		struct dp_sdf_per_bearer_info **sess_info)
 {
-	struct ether_hdr *eth_hdr = rte_pktmbuf_mtod(m, void *);
-	struct ipv4_hdr *ipv4_hdr = (struct ipv4_hdr *)&eth_hdr[1];
+	struct rte_ether_hdr *eth_hdr = rte_pktmbuf_mtod(m, void *);
+	struct rte_ipv4_hdr *ipv4_hdr = (struct rte_ipv4_hdr *)&eth_hdr[1];
 	struct arp_ipv4_key tmp_arp_key = {
 		.ip = ipv4_hdr->dst_addr
 	};
@@ -167,8 +167,8 @@ int construct_ether_hdr(struct rte_mbuf *m, uint8_t portid,
 					ret_arp_data->eth_addr.addr_bytes[4],
 					ret_arp_data->eth_addr.addr_bytes[5]);
 
-	ether_addr_copy(&ret_arp_data->eth_addr, &eth_hdr->d_addr);
-	ether_addr_copy(&ports_eth_addr[portid], &eth_hdr->s_addr);
+	rte_ether_addr_copy(&ret_arp_data->eth_addr, &eth_hdr->d_addr);
+	rte_ether_addr_copy(&ports_eth_addr[portid], &eth_hdr->s_addr);
 
 #ifdef NGCORE_SHRINK
 #ifdef STATS

@@ -325,7 +325,7 @@ adc_gating(uint32_t *rid, void **adc_ue_info, uint32_t n,
  *	- -1 on failure
  */
 static int
-cb_adc_table_create(struct msgbuf *msg_payload)
+cb_adc_table_create(struct ngic_rtc_msgbuf *msg_payload)
 {
 	return adc_table_create(msg_payload->dp_id,
 					msg_payload->msg_union.msg_table.max_elements);
@@ -342,7 +342,7 @@ cb_adc_table_create(struct msgbuf *msg_payload)
  *	- -1 on failure
  */
 static int
-cb_adc_table_delete(struct msgbuf *msg_payload)
+cb_adc_table_delete(struct ngic_rtc_msgbuf *msg_payload)
 {
 	return adc_table_delete(msg_payload->dp_id);
 }
@@ -358,7 +358,7 @@ cb_adc_table_delete(struct msgbuf *msg_payload)
  *	- -1 on failure
  */
 static int
-cb_adc_entry_add(struct msgbuf *msg_payload)
+cb_adc_entry_add(struct ngic_rtc_msgbuf *msg_payload)
 {
 	return adc_entry_add(msg_payload->dp_id,
 					msg_payload->msg_union.adc_filter_entry);
@@ -375,7 +375,7 @@ cb_adc_entry_add(struct msgbuf *msg_payload)
  *	- -1 on failure
  */
 static int
-cb_adc_entry_delete(struct msgbuf *msg_payload)
+cb_adc_entry_delete(struct ngic_rtc_msgbuf *msg_payload)
 {
 	return adc_entry_delete(msg_payload->dp_id,
 					msg_payload->msg_union.adc_filter_entry);

@@ -137,7 +137,7 @@ int unset_comm_type(enum cp_dp_comm id)
 
 int process_comm_msg(void *buf)
 {
-	struct msgbuf *rbuf = (struct msgbuf *)buf;
+	struct ngic_rtc_msgbuf *rbuf = (struct ngic_rtc_msgbuf *)buf;
 	struct ipc_node *cb;
 
 	if (rbuf->mtype >= MSG_END)
@@ -658,9 +658,9 @@ int
 zmq_mbuf_process(struct zmqbuf *zmqmsgbuf_rx, int zmqmsglen)
 {
 	int ret;
-	struct msgbuf buf = {0};
+	struct ngic_rtc_msgbuf buf = {0};
 	struct zmqbuf zmqmsgbuf_tx;
-	struct msgbuf *rbuf = &buf;
+	struct ngic_rtc_msgbuf *rbuf = &buf;
 	struct session_info *sess = &rbuf->msg_union.sess_entry;
 
 	memset(sess, 0, sizeof(*sess));

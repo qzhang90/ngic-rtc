@@ -75,7 +75,7 @@ struct resp_msgbuf r_buf;
 /*
  * Message Structure
  */
-struct msgbuf {
+struct ngic_rtc_msgbuf {
 	long mtype;
 	struct dp_id dp_id;
 	union __attribute__ ((packed)) {
@@ -96,12 +96,12 @@ struct msgbuf {
 #endif  /* CP_BUILD */
 	} msg_union;
 };
-struct msgbuf sbuf;
-struct msgbuf rbuf;
+struct ngic_rtc_msgbuf sbuf;
+struct ngic_rtc_msgbuf rbuf;
 /* IPC msg node */
 struct ipc_node {
 	int msg_id;	/*msg type*/
-	int (*msg_cb)(struct msgbuf *msg_payload);	/*callback function*/
+	int (*msg_cb)(struct ngic_rtc_msgbuf *msg_payload);	/*callback function*/
 };
 struct ipc_node *basenode;
 
@@ -132,7 +132,7 @@ void iface_init_ipc_node(void);
  */
 void
 iface_ipc_register_msg_cb(int msg_id,
-		int (*msg_cb)(struct msgbuf *msg_payload));
+		int (*msg_cb)(struct ngic_rtc_msgbuf *msg_payload));
 
 /**
  * @brief Functino to Process IPC msgs.

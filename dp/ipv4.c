@@ -15,12 +15,12 @@
  */
 static void update_ckcum(struct rte_mbuf *m)
 {
-	struct ipv4_hdr *ipv4_hdr;
+	struct rte_ipv4_hdr *ipv4_hdr;
 
 	/* update Ip checksum */
 	ipv4_hdr = get_mtoip(m);
 	ipv4_hdr->hdr_checksum = 0;
-	ipv4_hdr->hdr_checksum = rte_ipv4_cksum((struct ipv4_hdr *)ipv4_hdr);
+	ipv4_hdr->hdr_checksum = rte_ipv4_cksum((struct rte_ipv4_hdr *)ipv4_hdr);
 }
 
 void

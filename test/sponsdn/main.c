@@ -2,6 +2,16 @@
  * Copyright(c) 2017 Intel Corporation
  */
 
+#include <netinet/in.h>
+#include <netinet/in_systm.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+#include <netinet/ip_icmp.h>
+#include <net/ethernet.h>
+#include <net/ethernet.h>
+#include <stdbool.h>
+
 #include <sponsdn.h>
 #include <rte_eal.h>
 #include <rte_config.h>
@@ -29,7 +39,7 @@ int cnt;
 static unsigned char *handler(const unsigned char *bytes)
 {
 	static unsigned char ether_frame[1500];
-	const struct udp_hdr *udp_hdr = (const struct udp_hdr *)(bytes + 34);
+	const struct rte_udp_hdr *udp_hdr = (const struct rte_udp_hdr *)(bytes + 34);
 
 	if (rte_be_to_cpu_16(udp_hdr->src_port) == 53) {
 		memcpy(ether_frame, bytes, 1500);
@@ -101,7 +111,8 @@ static int read_host_names(char *host_names[], const char *cfg_file)
 	}
 
 	for (i = 0; i < MAX_DN; i++) {
-        strncpy(host_names[i], buf, strlen(buf));
+        strncpy(host_names[i], buf, strlen(buf)-1);
+		host_names[i][strlen(buf)-1] = '\0';
 		buf += strlen(host_names[i]);
 		if (!buf[0] || !buf[1])
 			break;
@@ -111,7 +122,7 @@ static int read_host_names(char *host_names[], const char *cfg_file)
 	return i + 1;
 }
 
-static void scan_and_print(unsigned char *pkt, char (*hname)[MAX_DNS_NAME_LEN])
+static void scan_and_print(unsigned char *pkt, unsigned int length, char (*hname)[MAX_DNS_NAME_LEN])
 {
 	int addr4_cnt, addr6_cnt;
 	struct in_addr addr4[100];
@@ -119,10 +130,10 @@ static void scan_and_print(unsigned char *pkt, char (*hname)[MAX_DNS_NAME_LEN])
 	unsigned match_id;
 
 	addr4_cnt = 0;
-	epc_sponsdn_scan((const char *)pkt, 1500, NULL, &match_id, NULL,
+	epc_sponsdn_scan((const char *)pkt, length, NULL, &match_id, NULL,
 			 &addr4_cnt, NULL, NULL, &addr6_cnt);
 	if (addr4_cnt) {
-		epc_sponsdn_scan((const char *)pkt, 1500, NULL, &match_id, addr4,
+		epc_sponsdn_scan((const char *)pkt, length, NULL, &match_id, addr4,
 				 &addr4_cnt, NULL, NULL, &addr6_cnt);
 		printf("Host name %s\n",  hname[match_id]);
 		for (i = 0; i < addr4_cnt; i++)
@@ -132,6 +143,48 @@ static void scan_and_print(unsigned char *pkt, char (*hname)[MAX_DNS_NAME_LEN])
 		printf("Domain name not found\n");
 	}
 
+}
+
+/**
+ * Helper function to locate the offset of the first byte of the payload in the
+ * given ethernet frame. Offset into the packet, and the length of the payload
+ * are returned in the arguments @a offset and @a length.
+ */
+static bool payloadOffset(unsigned char *pkt_data, unsigned int *offset,
+                          unsigned int *length) {
+    struct ip *iph = (struct ip *)(pkt_data + sizeof(struct ether_header));
+    struct tcphdr *th = NULL;
+
+    // Ignore packets that aren't IPv4
+    if (iph->ip_v != 4) {
+        return false;
+    }
+
+    // Ignore fragmented packets.
+    if (iph->ip_off & htons(IP_MF|IP_OFFMASK)) {
+        return false;
+    }
+
+    // IP header length, and transport header length.
+    unsigned int ihlen = iph->ip_hl * 4;
+    unsigned int thlen = 0;
+
+    switch (iph->ip_p) {
+    case IPPROTO_TCP:
+        th = (struct tcphdr *)((char *)iph + ihlen);
+        thlen = th->th_off * 4;
+        break;
+    case IPPROTO_UDP:
+        thlen = sizeof(struct udphdr);
+        break;
+    default:
+        return false;
+    }
+
+    *offset = sizeof(struct ether_header) + ihlen + thlen;
+    *length = sizeof(struct ether_header) + ntohs(iph->ip_len) - *offset;
+
+    return *length != 0;
 }
 
 int main(int argc, char **argv)
@@ -158,6 +211,9 @@ int main(int argc, char **argv)
 	ret++;
 	pkt10 = map_resp(argv[ret]);
 
+	unsigned int offset = 0, length = 0;
+	payloadOffset(pkt10, &offset, &length);
+	
 	rc = epc_sponsdn_create(n);
 	if (rc) {
 		printf("error allocating sponsored DN context %d\n", rc);
@@ -167,23 +223,21 @@ int main(int argc, char **argv)
 	for (i = 0; i < n; i++)
 		id[i] = i;
 
-	for (i = 0; i < n; i++)
-		printf("Hostname %s\n", hname_tbl[i]);
-
 	rc = epc_sponsdn_dn_add_multi(hname_tbl, id, n);
+
 	if (rc) {
 		printf("failed to add DN error code %d\n", rc);
 		return rc;
 	}
-	scan_and_print(pkt10 + 0x2a, hname);
+	scan_and_print(pkt10 + offset, length, hname);
 
 	printf("Deleting %s\n", hname_tbl[0]);
 	epc_sponsdn_dn_del(hname_tbl, 1);
-	scan_and_print(pkt10 + 0x2a, hname);
+	scan_and_print(pkt10 + offset, length, hname);
 
 	printf("Deleting %s\n", hname_tbl[1]);
 	epc_sponsdn_dn_del(&hname_tbl[1], 1);
-	scan_and_print(pkt10 + 0x2a, hname);
+	scan_and_print(pkt10 + offset, length, hname);
 
 	epc_sponsdn_free();
 	return 0;

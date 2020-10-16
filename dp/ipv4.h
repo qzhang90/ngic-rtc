@@ -23,14 +23,14 @@
  * @return
  *	pointer to ipv4 headers
  */
-static inline struct ipv4_hdr *get_mtoip(struct rte_mbuf *m)
+static inline struct rte_ipv4_hdr *get_mtoip(struct rte_mbuf *m)
 {
 #ifdef DPDK_2_1
-	return (struct ipv4_hdr *)(rte_pktmbuf_mtod(m, unsigned char *) +
+	return (struct rte_ipv4_hdr *)(rte_pktmbuf_mtod(m, unsigned char *) +
 				   ETH_HDR_SIZE);
 #else
-	return rte_pktmbuf_mtod_offset(m, struct ipv4_hdr *,
-				       sizeof(struct ether_hdr));
+	return rte_pktmbuf_mtod_offset(m, struct rte_ipv4_hdr *,
+				       sizeof(struct rte_ether_hdr));
 #endif
 
 }
@@ -46,7 +46,7 @@ static inline struct ipv4_hdr *get_mtoip(struct rte_mbuf *m)
  */
 static inline void build_ipv4_default_hdr(struct rte_mbuf *m)
 {
-	struct ipv4_hdr *ipv4_hdr;
+	struct rte_ipv4_hdr *ipv4_hdr;
 
 	ipv4_hdr = get_mtoip(m);
 
@@ -81,7 +81,7 @@ static inline void
 set_ipv4_hdr(struct rte_mbuf *m, uint16_t len, uint8_t protocol,
 	     uint32_t src_ip, uint32_t dst_ip)
 {
-	struct ipv4_hdr *ipv4_hdr;
+	struct rte_ipv4_hdr *ipv4_hdr;
 
 	ipv4_hdr = get_mtoip(m);
 

@@ -429,7 +429,7 @@ void epc_arp_init(void);
  */
 int arp_icmp_get_dest_mac_address(const uint32_t ipaddr,
 		const uint32_t phy_port,
-		struct ether_addr *hw_addr, uint32_t *nhip);
+		struct rte_ether_addr *hw_addr, uint32_t *nhip);
 
 /**
  * ARP/ICMP pipeline function

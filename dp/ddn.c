@@ -37,13 +37,13 @@ send_ddn_request(struct dp_session_info *si)
 				}
 
 #else
-				struct msgbuf msg_payload = {
+				struct ngic_rtc_msgbuf msg_payload = {
 					.mtype = MSG_DDN,
 					.dp_id.id = DPN_ID,
 					.msg_union.sess_entry.sess_id = si->sess_id };
 
 				if (comm_node[COMM_SOCKET].send(&msg_payload,
-						sizeof(struct msgbuf)) < 0) {
+						sizeof(struct ngic_rtc_msgbuf)) < 0) {
 						perror("msgsnd");
 						return -1;
 				}

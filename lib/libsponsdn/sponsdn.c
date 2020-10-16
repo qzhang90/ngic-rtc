@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 #include <rte_common.h>
 #include <rte_malloc.h>
-#include <hs/hs.h>
+#include </home/qzhang/hyperscan/src/hs.h>
 
 #include <rte_common.h>
 #include <rte_byteorder.h>
@@ -245,8 +245,6 @@ static int event_handler(unsigned int id, __rte_unused unsigned long long from,
 			unsigned long long to, __rte_unused unsigned int flags,
 			void *ctx)
 {
-	struct ctx *match_ctx = ctx;
-
 	match_ctx->matching_id = id;
 	match_ctx->off = to;
 	return 0;

@@ -94,13 +94,13 @@ enqueue_dl_pkts(struct dp_sdf_per_bearer_info **sess_info,
 #ifdef SDN_ODL_BUILD
 				zmq_ddn(si->sess_id, si->client_id);
 #else
-				struct msgbuf msg_payload = {
+				struct ngic_rtc_msgbuf msg_payload = {
 					.mtype = MSG_DDN,
 					.dp_id.id = DPN_ID,
 					.msg_union.sess_entry.sess_id = si->sess_id };
 
 				if (comm_node[COMM_SOCKET].send(&msg_payload,
-						sizeof(struct msgbuf)) < 0) {
+						sizeof(struct ngic_rtc_msgbuf)) < 0) {
 						perror("msgsnd");
 				}
 #endif

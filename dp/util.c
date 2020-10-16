@@ -10,7 +10,7 @@ void
 construct_udp_hdr(struct rte_mbuf *m, uint16_t len,
 		  uint16_t sport, uint16_t dport)
 {
-	struct udp_hdr *udp_hdr;
+	struct rte_udp_hdr *udp_hdr;
 
 	udp_hdr = get_mtoudp(m);
 	udp_hdr->src_port = htons(sport);
