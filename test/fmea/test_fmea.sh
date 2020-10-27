@@ -34,7 +34,7 @@ function main(){
 		  esac
 	}
 
-	 command -v bc >/dev/null 2>&1 || {
+	command -v bc >/dev/null 2>&1 || {
 	      echo >&2 "I require bc but it's not installed."
 		  read -p "Do you wish to install this program?" yn;
 		  case $yn in
@@ -211,7 +211,6 @@ function run_tests(){
 	done
 
 	echo "--------- TEST FINISHED---------------"
-
 }
 
 
@@ -236,14 +235,14 @@ function set_instances_env(){
 
 	#Source dp's setenv and update init.c
 	echo -e "Sourcing setenv script of dataplane\n"
-    screen  -S ngic_dataplane -d -m ssh -i /root/.ssh/id_rsa root@$DP_VM_NAME 'cd '$dp_home_dir';source setenv.sh;'
+    screen  -S ngic_dataplane -d -m ssh -i /home/qzhang/.ssh/id_rsa home/qzhang@$DP_VM_NAME 'cd '$dp_home_dir';source setenv.sh;'
 
 
     echo -e "Updating TPS parameter in simu_cp.cfg in CP... \n"
-    screen  -S ngic_controlplane -d -m ssh -i /root/.ssh/id_rsa root@$CP_VM_NAME 'cd '$cp_home_dir';cd ../config;'$update_tps';'
+    screen  -S ngic_controlplane -d -m ssh -i /home/qzhang/.ssh/id_rsa home/qzhang@$CP_VM_NAME 'cd '$cp_home_dir';cd ../config;'$update_tps';'
 
 	echo -e "Updating flows in simu_cp.cfg\n"
-ssh -i /root/.ssh/id_rsa $VM_LOGIN_NAME@$CP_VM_NAME 'cd '$cp_home_dir';cd ../config;'$update_flows_in_cp';'$update_cp_test_duration';'
+ssh -i /home/qzhang/.ssh/id_rsa $VM_LOGIN_NAME@$CP_VM_NAME 'cd '$cp_home_dir';cd ../config;'$update_flows_in_cp';'$update_cp_test_duration';'
 
 	echo -e "Updating flows and pps parameter in user_input.cfg ...\n"
 
@@ -263,7 +262,10 @@ function start_dp(){
 	echo "Starting Data-plane..."
 	rm -f screenlog.0
 
-    screen -L -S ngic_dataplane -d -m ssh -i /root/.ssh/id_rsa $VM_LOGIN_NAME@$DP_VM_NAME 'cd '$dp_home_dir';./run.sh log;'
+	echo "VM_LOGIN_NAME = " $VM_LOGIN_NAME
+	echo "DP_VM_NAME = " $DP_VM_NAME
+	echo "dp_home_dir = " $dp_home_dir
+    screen -L -S ngic_dataplane -d -m ssh -i /home/qzhang/.ssh/id_rsa $VM_LOGIN_NAME@$DP_VM_NAME 'cd '$dp_home_dir';./run.sh log;'
 
 	sleep $session_duration
 	sleep 10
@@ -298,8 +300,8 @@ function start_dp(){
 		echo " "
         fmea_test_1_flag=0
    		echo -e "Stopping Data-Plane..."
-   		ssh -i /root/.ssh/id_rsa "$VM_LOGIN_NAME"@$DP_VM_NAME  'killall ngic_dataplane'
-   		ssh -i /root/.ssh/id_rsa "$VM_LOGIN_NAME"@$DP_VM_NAME  'killall run.sh'
+   		ssh -i /home/qzhang/.ssh/id_rsa "$VM_LOGIN_NAME"@$DP_VM_NAME  'killall ngic_dataplane'
+   		ssh -i /home/qzhang/.ssh/id_rsa "$VM_LOGIN_NAME"@$DP_VM_NAME  'killall run.sh'
    		screen -S ngic_dataplane -X stuff ^C
    		echo -e "Sent Ctrl c signal to dataplane...\n"
     	else
@@ -319,13 +321,13 @@ function start_cp(){
 	echo  "Starting Control-plane..."
 	rm -f screenlog.0
 
-   screen -L -S ngic_controlplane -d -m ssh -i /root/.ssh/id_rsa $VM_LOGIN_NAME@$CP_VM_NAME 'cd '$cp_home_dir';./run.sh log;'
+   screen -L -S ngic_controlplane -d -m ssh -i /home/qzhang/.ssh/id_rsa $VM_LOGIN_NAME@$CP_VM_NAME 'cd '$cp_home_dir';./run.sh log;'
 
 	sleep 15
 
 
 	#Ensure CP has been started successfully.
-	ssh -i /root/.ssh/id_rsa "$VM_LOGIN_NAME"@$CP_VM_NAME  'ps -aeldf | grep -v grep | grep -w ngic_controlplane' >/dev/null
+	ssh -i /home/qzhang/.ssh/id_rsa "$VM_LOGIN_NAME"@$CP_VM_NAME  'ps -aeldf | grep -v grep | grep -w ngic_controlplane' >/dev/null
 
 
 	eval $check_cp_start_command
@@ -536,19 +538,19 @@ function generate_csv_report(){
 		if [[ $TEST_NO -ne 1 ]]
 		then
              #Copy cp log file
-             cp_file_to_copy=$(ssh -i /root/.ssh/id_rsa $VM_LOGIN_NAME@$CP_VM_NAME 'cd '$cp_home_dir';cd logs;'$file_command';')
+             cp_file_to_copy=$(ssh -i /home/qzhang/.ssh/id_rsa $VM_LOGIN_NAME@$CP_VM_NAME 'cd '$cp_home_dir';cd logs;'$file_command';')
 
 	         echo -e "\n Copying $cp_file_to_copy from cp machine"
              scp $VM_LOGIN_NAME@$CP_VM_NAME:$cp_home_dir/logs/$cp_file_to_copy TEST_CASE_$TEST_NO
 	         sleep 5
 
         	 #clear log folder
-	         ssh -i /root/.ssh/id_rsa $VM_LOGIN_NAME@$CP_VM_NAME 'cd '$cp_home_dir';cd logs;rm -f *.log;'
+	         ssh -i /home/qzhang/.ssh/id_rsa $VM_LOGIN_NAME@$CP_VM_NAME 'cd '$cp_home_dir';cd logs;rm -f *.log;'
 
         fi
 
         #Copy dp log file
-	    dp_file_to_copy=$(ssh -i /root/.ssh/id_rsa $VM_LOGIN_NAME@$DP_VM_NAME 'cd '$dp_home_dir';cd logs;'$file_command';')
+	    dp_file_to_copy=$(ssh -i /home/qzhang/.ssh/id_rsa $VM_LOGIN_NAME@$DP_VM_NAME 'cd '$dp_home_dir';cd logs;'$file_command';')
 
 
         echo -e "\n Copying $dp_file_to_copy from dp machine"
@@ -556,7 +558,7 @@ function generate_csv_report(){
 		sleep 5
 
         #clear log folder.
-        ssh -i /root/.ssh/id_rsa $VM_LOGIN_NAME@$DP_VM_NAME 'cd '$dp_home_dir';cd logs;rm -f *.log;'
+        ssh -i /home/qzhang/.ssh/id_rsa $VM_LOGIN_NAME@$DP_VM_NAME 'cd '$dp_home_dir';cd logs;rm -f *.log;'
      fi
 
 	 if [[ $TEST_NO -ge 3 ]]
@@ -639,14 +641,14 @@ function cleanup(){
    if [[ $RST_FLAG -eq 1 || $count -eq $REPEAT_COUNT  ]]
    then
    echo -e "Stopping Control-Plane.."
-   ssh -i /root/.ssh/id_rsa "$VM_LOGIN_NAME"@$CP_VM_NAME  'killall ngic_controlplane'
-   ssh -i /root/.ssh/id_rsa "$VM_LOGIN_NAME"@$CP_VM_NAME  'killall run.sh'
+   ssh -i /home/qzhang/.ssh/id_rsa "$VM_LOGIN_NAME"@$CP_VM_NAME  'killall ngic_controlplane'
+   ssh -i /home/qzhang/.ssh/id_rsa "$VM_LOGIN_NAME"@$CP_VM_NAME  'killall run.sh'
    screen -S ngic_controlplane -X stuff ^C
    echo -e "Sent Ctrl c signal to controlplane..\n"
 
    echo -e "Stopping Data-Plane..."
-   ssh -i /root/.ssh/id_rsa "$VM_LOGIN_NAME"@$DP_VM_NAME  'killall ngic_dataplane'
-   ssh -i /root/.ssh/id_rsa "$VM_LOGIN_NAME"@$DP_VM_NAME  'killall run.sh'
+   ssh -i /home/qzhang/.ssh/id_rsa "$VM_LOGIN_NAME"@$DP_VM_NAME  'killall ngic_dataplane'
+   ssh -i /home/qzhang/.ssh/id_rsa "$VM_LOGIN_NAME"@$DP_VM_NAME  'killall run.sh'
    screen -S ngic_dataplane -X stuff ^C
    echo -e "Sent Ctrl c signal to dataplane...\n"
    fi

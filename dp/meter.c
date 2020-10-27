@@ -41,7 +41,8 @@
 
 #elif APP_MODE == APP_MODE_SRTCM_COLOR_BLIND
 
-#define FUNC_METER(a, b, c, d) rte_meter_srtcm_color_blind_check(a, b, c)
+// #define FUNC_METER(a, b, c, d) rte_meter_srtcm_color_blind_check(a, b, c)
+#define FUNC_METER(m, p, t, pkt_len, pkt_color) rte_meter_srtcm_color_blind_check(m, p, t, pkt_len)
 #define FUNC_CONFIG   rte_meter_srtcm_config
 #define PARAMS        app_srtcm_params
 #define PARAMS_AMBR   ambr_srtcm_params
@@ -139,6 +140,7 @@ app_pkt_handle(struct rte_meter_srtcm *m, struct rte_mbuf *pkt,
 	/* color input is not used for blind modes */
 	output_color =
 		(uint8_t) FUNC_METER(m,
+				 NULL,
 				 time,
 				 pkt_len,
 				 (enum rte_meter_color)input_color);
@@ -280,8 +282,8 @@ mtr_cfg_entry(int msg_id, struct rte_meter_srtcm *msg_payload)
 	rte_meter_srtcm_config(m, &mtr_tbl->params[msg_id]);
 
 	RTE_LOG_DP(DEBUG, DP, "Configuring MTR index %d\n", msg_id);
-	if ((m)->cir_period == 0)
-		rte_exit(EXIT_FAILURE, "Meter config fail. cir_period is 0!!");
+	// if ((m)->cir_period == 0)
+	// 	rte_exit(EXIT_FAILURE, "Meter config fail. cir_period is 0!!");
 	return 0;
 }
 
@@ -310,11 +312,11 @@ sdf_mtr_process_pkt(struct dp_sdf_per_bearer_info **sdf_info,
 			m = &psdf->sdf_mtr_obj;
 
 		current_time = rte_rdtsc();
-		if (m->cir_period == 0) {
-			RTE_LOG_DP(DEBUG, DP, "SDF: Either MTR not found or"
-				" MTR not configured!!!\n");
-			continue;
-		}
+		// if (m->cir_period == 0) {
+		// 	RTE_LOG_DP(DEBUG, DP, "SDF: Either MTR not found or"
+		// 		" MTR not configured!!!\n");
+		// 	continue;
+		// }
 		action = app_pkt_handle(m, pkt[i], current_time);
 		if ((action == RED)
 			|| (action == YELLOW)
@@ -380,11 +382,11 @@ apn_mtr_process_pkt(struct dp_sdf_per_bearer_info **sdf_info, uint32_t flow,
 		}
 
 		current_time = rte_rdtsc();
-		if (m->cir_period == 0) {
-			RTE_LOG_DP(DEBUG, DP, "APN: Either MTR not found or"
-				" MTR not configured!!!\n");
-			continue;
-		}
+		// if (m->cir_period == 0) {
+		// 	RTE_LOG_DP(DEBUG, DP, "APN: Either MTR not found or"
+		// 		" MTR not configured!!!\n");
+		// 	continue;
+		// }
 		action = app_pkt_handle(m, pkt[i], current_time);
 		if ((action == RED)
 			|| (action == YELLOW)
