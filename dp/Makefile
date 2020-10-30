@@ -99,7 +99,9 @@ endif
 
 #dpdk-18.02 change build directory structure
 #LDFLAGS += -L$(RTE_SRCDIR)/../lib/libsponsdn/x86_64-native-linuxapp-gcc/ -lsponsdn
-LDFLAGS += -L$(RTE_SRCDIR)/s390x-native-linux-gcc/ -lsponsdn
+# LDFLAGS += -L$(RTE_SRCDIR)/s390x-native-linux-gcc/ -lsponsdn
+NGIC_RTC_DIR ?= /home/qzhang/ngic-rtc
+LDFLAGS += -L$(NGIC_RTC_DIR)/lib/libsponsdn/build -lsponsdn
 
 LDFLAGS += -lhs -lhs_runtime -lstdc++ -lm -lcrypto
 

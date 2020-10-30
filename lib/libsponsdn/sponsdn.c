@@ -243,10 +243,10 @@ int epc_sponsdn_dn_del(char **dn, unsigned int num)
 
 static int event_handler(unsigned int id, __rte_unused unsigned long long from,
 			unsigned long long to, __rte_unused unsigned int flags,
-			void *ctx)
+			void *match_ctx)
 {
-	match_ctx->matching_id = id;
-	match_ctx->off = to;
+	((struct ctx *)match_ctx)->matching_id = id;
+	((struct ctx *)match_ctx)->off = to;
 	return 0;
 }
 
